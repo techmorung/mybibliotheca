@@ -61,7 +61,7 @@ services:
     ports:
       - "5054:5054"
     volumes:
-      - ./books.db:/app/books.db
+      - /home/yourusername/bibliotheca/books.db:/app/books.db
     restart: unless-stopped
 ```
 
