@@ -25,7 +25,7 @@
 
 1. **Clone the repository:**
    ```sh
-   git clone https://github.com/yourusername/bibliotheca.git
+   git clone https://github.com/pickles4evaaaa/bibliotheca.git
    cd bibliotheca
    ```
 
