@@ -24,7 +24,43 @@
 
 ## 🚀 Getting Started
 
+## 📦 Run with Docker
+
+Bibliotheca can be run completely in Docker — no need to install Python or dependencies on your machine.
+
 ### ✅ Prerequisites
+
+- [Docker](https://www.docker.com/) installed
+- [Docker Compose](https://docs.docker.com/compose/) installed
+
+---
+
+### 🔁 Option 1: One-liner (Docker only)
+
+```bash
+docker run -d \
+  -v "$PWD/books.db:/app/books.db" \
+  -p 5054:5054 \
+  --name bibliotheca \
+  pickles4evaaaa/bibliotheca:latest
+
+#### 📄 `docker-compose.yml`
+
+```yaml
+version: '3.8'
+
+services:
+  bibliotheca:
+    image: pickles4evaaaa/bibliotheca:latest
+    container_name: bibliotheca
+    ports:
+      - "5054:5054"
+    volumes:
+      - ./books.db:/app/books.db
+    restart: unless-stopped
+
+
+### ✅ Prerequisites (install from source)
 
 - Python 3.8+
 - `pip`
