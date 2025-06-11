@@ -11,6 +11,9 @@
 - **Search**: Search for books using the Google Books API.
 - **Responsive UI**: Clean, mobile-friendly interface using Bootstrap.
 
+![App Preview](https://i.imgur.com/AkiBN68.png)
+![Library](https://i.imgur.com/h9iR9ql.png)
+
 ## Getting Started
 
 ### Prerequisites
