@@ -28,6 +28,9 @@
    git clone https://github.com/pickles4evaaaa/bibliotheca.git
    cd bibliotheca
    ```
+1.a **Install Python Virtual Environment**
+cd bibliotheca
+python3 -m venv venv
 
 2. **Install dependencies:**
    ```sh
