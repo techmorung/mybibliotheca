@@ -79,6 +79,12 @@
       {% block content %}
         <a href="{{ url_for('main.view_book', uid=book.uid) }}"><strong>{{ book.title }}</strong></a>
       {% endblock %}
+      <div class="text-center mt-4">
+        <a href="https://github.com/pickles4evaaaa/bibliotheca" target="_blank" rel="noopener" title="View on GitHub">
+          <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+               alt="GitHub" width="40" height="40" style="opacity:0.7; transition:opacity 0.2s;">
+        </a>
+      </div>
     </div>
   </div>
   <!-- Bootstrap JS CDN -->
