@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Search for Books</h2>
+<form method="post" class="mb-4">
+  <input type="text" name="query" value="{{ query }}" placeholder="Enter book title" class="form-control" required>
+  <button type="submit" class="btn btn-primary mt-2">Search</button>
+</form>
+{% if results %}
+  <ul class="list-group">
+    {% for book in results %}
+      <li class="list-group-item d-flex align-items-center">
+        {% if book.image %}
+          <img src="{{ book.image }}" alt="cover" style="height:60px;width:auto;margin-right:16px;">
+        {% endif %}
+        <div>
+          <strong>{{ book.title }}</strong><br>
+          <small>by {{ book.authors }}</small><br>
+          <small>ISBN: {{ book.isbn or 'N/A' }}</small>
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Add Book{% endblock %}
+{% block content %}
+<h1>Add a New Book</h1>
+<form method="post">
+  <button type="button" class="btn btn-secondary" onclick="startScanner()">Scan Barcode</button>
+  <!-- Use type="tel" and pattern="\d*" for mobile keypad -->
+  <input id="isbn" name="isbn" class="form-control" value="{{ request.form.isbn or '' }}" type="tel" pattern="\d*" inputmode="numeric">
+  <div id="scanner" style="width:300px; height:200px; display:none;"></div>
+  <button name="fetch" value="1" type="submit">Fetch Book Data</button><br>
+  Title: <input name="title" value="{{ book_data.title if book_data else request.form.title or '' }}"><br>
+  Author: <input name="author" value="{{ book_data.author if book_data else request.form.author or '' }}"><br>
+  Start Date: <input name="start_date" type="date"><br>
+  Finish Date: <input name="finish_date" type="date"><br>
+  {% if book_data and book_data.cover %}
+    <img src="{{ book_data.cover }}" alt="Book Cover" style="max-height:200px;"><br>
+  {% endif %}
+  <label>
+    <input type="checkbox" name="want_to_read" {% if request.form.want_to_read %}checked{% endif %}>
+    Want to Read
+  </label><br>
+  <label>
+    <input type="checkbox" name="library_only" {% if request.form.library_only %}checked{% endif %}>
+    Add to Library Only (not for reading)
+  </label><br>
+  <input type="submit" name="add" value="Add Book">
+</form>
+<a href="{{ url_for('main.index') }}">Back to list</a>
+
+<script src="https://unpkg.com/@ericblade/quagga2@1.2.6/dist/quagga.min.js"></script>
+<script>
+let quaggaStarted = false;
+
+function startScanner() {
+  const scannerDiv = document.getElementById('scanner');
+  scannerDiv.style.display = 'block';
+
+  if (quaggaStarted) {
+    Quagga.stop();
+    quaggaStarted = false;
+  }
+
+  Quagga.init({
+    inputStream: {
+      name: "Live",
+      type: "LiveStream",
+      target: scannerDiv,
+      constraints: {
+        facingMode: "environment"
+      }
+    },
+    decoder: {
+      readers: ["ean_reader", "ean_8_reader", "upc_reader", "upc_e_reader", "code_39_reader"]
+    }
+  }, function(err) {
+    if (err) {
+      alert("Error starting scanner: " + err);
+      scannerDiv.style.display = 'none';
+      return;
+    }
+    Quagga.start();
+    quaggaStarted = true;
+  });
+
+  Quagga.offDetected(); // Remove previous handlers
+  Quagga.onDetected(function(result) {
+    if (result && result.codeResult && result.codeResult.code) {
+      const code = result.codeResult.code;
+      if (code.length === 13 && code.startsWith("978")) {
+        document.getElementById('isbn').value = code;
+        Quagga.stop();
+        quaggaStarted = false;
+        scannerDiv.style.display = 'none';
+        Quagga.offDetected();
+      }
+    }
+  });
+}
+</script>
+{% endblock %}

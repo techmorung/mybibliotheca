@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}My Books{% endblock %}
+{% block content %}
+<h1>Books</h1>
+<div class="alert alert-success mb-4">
+  📅 Current Reading Streak: <strong>{{ streak }}</strong> day{{ 's' if streak != 1 else '' }}!
+</div>
+<h2 class="mt-4">Currently Reading</h2>
+<ul class="list-group mb-4">
+  {% for book in currently_reading %}
+    <li class="list-group-item d-flex align-items-center">
+      {% if book.cover_url %}
+        <img src="{{ book.cover_url }}" alt="cover"
+             style="height:60px;width:auto;margin-right:16px;border-radius:4px;"
+             onerror="this.onerror=null;this.src='{{ url_for('static', filename='bookshelf.png') }}';">
+      {% else %}
+        <img src="{{ url_for('static', filename='bookshelf.png') }}" alt="cover"
+             style="height:60px;width:auto;margin-right:16px;border-radius:4px;">
+      {% endif %}
+      <div>
+        <a href="{{ url_for('main.view_book', uid=book.uid) }}"><strong>{{ book.title }}</strong></a>
+        <br>
+        <small>by {{ book.author }} (ISBN: {{ book.isbn }})</small>
+      </div>
+    </li>
+  {% else %}
+    <li class="list-group-item">No books currently being read.</li>
+  {% endfor %}
+</ul>
+
+<h2>Want to Read</h2>
+<ul class="list-group mb-4">
+  {% for book in want_to_read %}
+    <li class="list-group-item d-flex align-items-center">
+      {% if book.cover_url %}
+        <img src="{{ book.cover_url }}" alt="cover"
+             style="height:60px;width:auto;margin-right:16px;border-radius:4px;"
+             onerror="this.onerror=null;this.src='{{ url_for('static', filename='bookshelf.png') }}';">
+      {% else %}
+        <img src="{{ url_for('static', filename='bookshelf.png') }}" alt="cover"
+             style="height:60px;width:auto;margin-right:16px;border-radius:4px;">
+      {% endif %}
+      <div>
+        <a href="{{ url_for('main.view_book', uid=book.uid) }}"><strong>{{ book.title }}</strong></a>
+        <br>
+        <small>by {{ book.author }} (ISBN: {{ book.isbn }})</small>
+      </div>
+    </li>
+  {% else %}
+    <li class="list-group-item">No books in Want to Read.</li>
+  {% endfor %}
+</ul>
+
+<h2>
+  Finished Books
+  <button class="btn btn-link p-0 ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#allFinishedBooks" aria-expanded="false" aria-controls="allFinishedBooks">
+    Show All
+  </button>
+</h2>
+<ul class="list-group mb-2">
+  {% for book in finished[:5] %}
+    <li class="list-group-item d-flex align-items-center">
+      {% if book.cover_url %}
+        <img src="{{ book.cover_url }}" alt="cover"
+             style="height:60px;width:auto;margin-right:16px;border-radius:4px;"
+             onerror="this.onerror=null;this.src='{{ url_for('static', filename='bookshelf.png') }}';">
+      {% else %}
+        <img src="{{ url_for('static', filename='bookshelf.png') }}" alt="cover"
+             style="height:60px;width:auto;margin-right:16px;border-radius:4px;">
+      {% endif %}
+      <div>
+        <a href="{{ url_for('main.view_book', uid=book.uid) }}"><strong>{{ book.title }}</strong></a>
+        <br>
+        <small>
+          by {{ book.author }} (ISBN: {{ book.isbn }})
+          <br>
+          <span class="text-muted">Finished: {{ book.finish_date }}</span>
+        </small>
+      </div>
+    </li>
+  {% else %}
+    <li class="list-group-item">No finished books.</li>
+  {% endfor %}
+</ul>
+<div class="collapse" id="allFinishedBooks">
+  <ul class="list-group">
+    {% for book in finished[5:] %}
+      <li class="list-group-item d-flex align-items-center">
+        {% if book.cover_url %}
+          <img src="{{ book.cover_url }}" alt="cover"
+               style="height:60px;width:auto;margin-right:16px;border-radius:4px;"
+               onerror="this.onerror=null;this.src='{{ url_for('static', filename='bookshelf.png') }}';">
+        {% else %}
+          <img src="{{ url_for('static', filename='bookshelf.png') }}" alt="cover"
+               style="height:60px;width:auto;margin-right:16px;border-radius:4px;">
+        {% endif %}
+        <div>
+          <a href="{{ url_for('main.view_book', uid=book.uid) }}"><strong>{{ book.title }}</strong></a>
+          <br>
+          <small>
+            by {{ book.author }} (ISBN: {{ book.isbn }})
+            <br>
+            <span class="text-muted">Finished: {{ book.finish_date }}</span>
+          </small>
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}
