@@ -39,7 +39,7 @@ Bibliotheca can be run completely in Docker — no need to install Python or dep
 
 ```bash
 docker run -d \
-  -v "$PWD/books.db:/app/books.db" \
+  -v bibliotheca_data:/app/data \
   -p 5054:5054 \
   --name bibliotheca \
   pickles4evaaaa/bibliotheca:latest
@@ -59,10 +59,14 @@ services:
     image: pickles4evaaaa/bibliotheca:latest
     container_name: bibliotheca
     ports:
-      - "5054:5054"
+      - "5053:5054"
     volumes:
-      - /home/yourusername/bibliotheca/books.db:/app/books.db
+      - bibliotheca_data:/app/data
     restart: unless-stopped
+
+volumes:
+  bibliotheca_data:
+
 ```
 
 Then run:
