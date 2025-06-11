@@ -1,3 +1,8 @@
+Here's a cleaned-up, typo-free, and properly structured version of your `README.md`, with fixed headings, formatting, and syntax blocks:
+
+---
+
+````md
 # 📚 Bibliotheca
 
 **Bibliotheca** is a self-hosted personal library and reading tracker web app built with Flask. It lets you log, organize, and visualize your reading journey. Add books by ISBN, track reading progress, log daily reading, and generate monthly wrap-up images of your finished titles.
@@ -17,25 +22,25 @@
 
 ## 🖼️ Preview
 
-![App Preview](https://i.imgur.com/AkiBN68.png)
+![App Preview](https://i.imgur.com/AkiBN68.png)  
 ![Library](https://i.imgur.com/h9iR9ql.png)
 
 ---
 
 ## 🚀 Getting Started
 
-## 📦 Run with Docker
+### 📦 Run with Docker
 
 Bibliotheca can be run completely in Docker — no need to install Python or dependencies on your machine.
 
-### ✅ Prerequisites
+#### ✅ Prerequisites
 
 - [Docker](https://www.docker.com/) installed
 - [Docker Compose](https://docs.docker.com/compose/) installed
 
 ---
 
-### 🔁 Option 1: One-liner (Docker only)
+#### 🔁 Option 1: One-liner (Docker only)
 
 ```bash
 docker run -d \
@@ -43,8 +48,13 @@ docker run -d \
   -p 5054:5054 \
   --name bibliotheca \
   pickles4evaaaa/bibliotheca:latest
+````
 
-#### 📄 `docker-compose.yml`
+---
+
+#### 🔁 Option 2: Docker Compose
+
+Create a `docker-compose.yml` file:
 
 ```yaml
 version: '3.8'
@@ -58,52 +68,67 @@ services:
     volumes:
       - ./books.db:/app/books.db
     restart: unless-stopped
+```
 
+Then run:
 
-### ✅ Prerequisites (install from source)
-
-- Python 3.8+
-- `pip`
+```bash
+docker compose up -d
+```
 
 ---
 
-### 📦 Installation
+### 🐍 Install from Source (Manual Setup)
+
+#### ✅ Prerequisites
+
+* Python 3.8+
+* `pip`
+
+---
+
+### 🔧 Manual Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/pickles4evaaaa/bibliotheca.git
    cd bibliotheca
    ```
 
-2. **Create a Python virtual environment**  
-   *(Virtual environments isolate dependencies to prevent conflicts and make the app easier to run and update.)*
+2. **Create a Python virtual environment**
+
    ```bash
    python3 -m venv venv
    source venv/bin/activate
    ```
 
 3. **Install dependencies**
+
    ```bash
    pip install -r requirements.txt
    ```
 
-4. **Set up the database**
-   ```bash
-   python setup_db.py
-   ```
+4. **Run the app**
 
-5. **Run the app**
    ```bash
    python run.py
    ```
+
    Visit: [http://127.0.0.1:5054](http://127.0.0.1:5054)
+
+> 💡 No need to manually set up the database — it is created automatically on first run.
 
 ---
 
 ### ⚙️ Configuration
 
-- Defaults to SQLite and a development secret key.
-- For production, set environment variables like `SECRET_KEY` and `DATABASE_URL`, or edit `config.py`.
+* By default, uses SQLite (`books.db`) and a simple dev secret key.
+* For production, you can configure:
+
+  * `SECRET_KEY`
+  * `DATABASE_URI`
+    via environment variables or `.env`.
 
 ---
 
@@ -120,7 +145,7 @@ bibliotheca/
 ├── static/
 ├── requirements.txt
 ├── run.py
-├── setup_db.py
+├── docker-compose.yml
 └── README.md
 ```
 
@@ -132,6 +157,8 @@ Licensed under the [MIT License](LICENSE).
 
 ---
 
-### ❤️ Contribute
+## ❤️ Contribute
 
 **Bibliotheca** is open source and contributions are welcome!
+
+Pull requests, bug reports, and feature suggestions are appreciated.
