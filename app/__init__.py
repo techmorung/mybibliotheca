@@ -1,5 +1,6 @@
 import os
 from flask import Flask
+from sqlalchemy import inspect
 from .models import db
 
 def create_app():
@@ -10,14 +11,14 @@ def create_app():
 
     db.init_app(app)
 
-    # === Auto-create DB if missing ===
-    db_path = app.config['SQLALCHEMY_DATABASE_URI'].replace('sqlite:///', '', 1)
-    if not os.path.exists(db_path):
-        print(f"📚 Creating new database at {db_path}")
-        with app.app_context():
+    # ✅ Robust schema check inside app context
+    with app.app_context():
+        inspector = inspect(db.engine)
+        if not inspector.get_table_names():  # No tables in DB
+            print("📚 Creating database schema...")
             db.create_all()
-    else:
-        print(f"✅ Using existing database at {db_path}")
+        else:
+            print("✅ Tables already present.")
 
     from .routes import bp
     app.register_blueprint(bp)
