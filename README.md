@@ -1,8 +1,3 @@
-Here's a cleaned-up, typo-free, and properly structured version of your `README.md`, with fixed headings, formatting, and syntax blocks:
-
----
-
-````md
 # 📚 Bibliotheca
 
 **Bibliotheca** is a self-hosted personal library and reading tracker web app built with Flask. It lets you log, organize, and visualize your reading journey. Add books by ISBN, track reading progress, log daily reading, and generate monthly wrap-up images of your finished titles.
