@@ -45,7 +45,6 @@ def format_date(date):
     return date.strftime("%Y-%m-%d") if date else None
 
 def get_reading_streak():
-    streak_offset = 149  # Your previous streak
     # Get all unique dates with a reading log, sorted descending
     dates = (
         ReadingLog.query.with_entities(ReadingLog.date)
@@ -69,7 +68,7 @@ def get_reading_streak():
         else:
             break
     current_streak = streak
-    return current_streak + streak_offset
+    return current_streak
 
 def generate_month_review_image(books, month, year):
     import calendar
