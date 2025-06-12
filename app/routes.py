@@ -48,7 +48,8 @@ def fetch_book(isbn):
 @bp.route('/')
 def index():
     books = Book.get_all_books()
-    streak = get_reading_streak()
+    timezone = pytz.timezone(current_app.config.get('TIMEZONE', 'UTC'))
+    streak = get_reading_streak(timezone)
     for book in books:
         if not book.uid:
             book.uid = secrets.token_urlsafe(6)
