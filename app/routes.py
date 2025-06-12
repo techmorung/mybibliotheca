@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, jsonify, flash, send_file
+from flask import Blueprint, current_app, render_template, request, redirect, url_for, jsonify, flash, send_file
 from .models import Book, db, ReadingLog
 from .utils import fetch_book_data, get_reading_streak, get_google_books_cover, generate_month_review_image
 from datetime import datetime, date
@@ -7,7 +7,7 @@ import requests
 from io import BytesIO
 import pytz
 
-CENTRAL_AMERICA_TZ = pytz.timezone("America/Chicago")
+TIMEZONE = pytz.timezone(current_app.config.get('TIMEZONE','UTC'))
 
 app = Blueprint('app', __name__)
 bp = Blueprint('main', __name__)
@@ -248,12 +248,12 @@ def public_library():
     books_query = Book.query.order_by(Book.id.desc())
     if filter_status == 'currently_reading':
         books_query = books_query.filter(
-            Book.finish_date == None,
-            Book.want_to_read == False,
-            Book.library_only == False
+            Book.finish_date is None,
+            Book.want_to_read is False,
+            Book.library_only is False
         )
     elif filter_status == 'want_to_read':
-        books_query = books_query.filter(Book.want_to_read == True)
+        books_query = books_query.filter(Book.want_to_read is True)
     books = books_query.all()
     return render_template('public_library.html', books=books, filter_status=filter_status)
 
@@ -273,7 +273,7 @@ def edit_book(uid):
 def month_review(year, month):
     # Query books finished in the given month/year
     books = Book.query.filter(
-        Book.finish_date != None,
+        Book.finish_date is not None,
         Book.finish_date >= datetime(year, month, 1),
         Book.finish_date < (
             datetime(year + 1, 1, 1) if month == 12 else datetime(year, month + 1, 1)
@@ -292,7 +292,7 @@ def month_review(year, month):
 @bp.route('/generate_month_wrapup')
 def generate_month_wrapup():
     # Get current month and year using Central America time
-    now_ca = datetime.now(CENTRAL_AMERICA_TZ)
+    now_ca = datetime.now(TIMEZONE)
     year = now_ca.year
     month = now_ca.month
     
