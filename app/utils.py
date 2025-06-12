@@ -8,8 +8,6 @@ from io import BytesIO
 import requests
 import os
 
-CENTRAL_AMERICA_TZ = pytz.timezone("America/Chicago")
-
 def fetch_book_data(isbn):
     url = f"https://openlibrary.org/api/books?bibkeys=ISBN:{isbn}&format=json&jscmd=data"
     response = requests.get(url)
@@ -44,7 +42,7 @@ def get_google_books_cover(isbn):
 def format_date(date):
     return date.strftime("%Y-%m-%d") if date else None
 
-def get_reading_streak():
+def get_reading_streak(timezone):
     # Get all unique dates with a reading log, sorted descending
     dates = (
         ReadingLog.query.with_entities(ReadingLog.date)
@@ -57,7 +55,7 @@ def get_reading_streak():
         return 0
 
     # Use Central America time for "today"
-    now_ca = datetime.now(CENTRAL_AMERICA_TZ)
+    now_ca = datetime.now(timezone)
     today = now_ca.date()
 
     streak = 0
