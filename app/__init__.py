@@ -6,7 +6,9 @@ from .models import db
 def create_app():
     app = Flask(__name__)
     app.config['SECRET_KEY'] = 'SECRET_KEY_HERE'
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////app/data/books.db"
+    app.config["SQLALCHEMY_DATABASE_URI"] = (
+        os.environ.get("DATABASE_URL") or "sqlite:///app/books.db"
+    )
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     db.init_app(app)
@@ -14,7 +16,7 @@ def create_app():
     # ✅ Robust schema check inside app context
     with app.app_context():
         inspector = inspect(db.engine)
-        if not inspector.get_table_names():  # No tables in DB
+        if not inspector.get_table_names():
             print("📚 Creating database schema...")
             db.create_all()
         else:
