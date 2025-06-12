@@ -8,8 +8,6 @@ from io import BytesIO
 import pytz
 import csv
 
-TIMEZONE = pytz.timezone(current_app.config.get('TIMEZONE','UTC'))
-
 app = Blueprint('app', __name__)
 bp = Blueprint('main', __name__)
 
@@ -308,7 +306,8 @@ def month_review(year, month):
 @bp.route('/generate_month_wrapup')
 def generate_month_wrapup():
     # Get current month and year using Central America time
-    now_ca = datetime.now(TIMEZONE)
+    tz = pytz.timezone(current_app.config.get('TIMEZONE', 'UTC'))
+    now_ca = datetime.now(tz)
     year = now_ca.year
     month = now_ca.month
     
