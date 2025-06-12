@@ -15,6 +15,16 @@
     <label for="isbn" class="form-label">ISBN</label>
     <input type="text" class="form-control" id="isbn" name="isbn" value="{{ book.isbn }}" required>
   </div>
+  <div class="mb-3">
+    <label for="cover_url" class="form-label">Cover Image URL</label>
+    <input type="url" class="form-control" id="cover_url" name="cover_url" value="{{ book.cover_url or '' }}">
+    {% if book.cover_url %}
+      <div class="mt-2">
+        <img src="{{ book.cover_url }}" alt="Current Cover" style="max-width:120px;">
+      </div>
+    {% endif %}
+    <div class="form-text">Paste a direct image URL to override the cover.</div>
+  </div>
   <button type="submit" class="btn btn-primary">Save Changes</button>
   <a href="{{ url_for('main.view_book', uid=book.uid) }}" class="btn btn-secondary">Cancel</a>
 </form>
