@@ -43,7 +43,7 @@ def fetch_book(isbn):
         book_data['cover'] = google_cover
     # If neither source provides a cover, set a default
     if not book_data.get('cover'):
-        book_data['cover'] = url_for('static', filename='default_cover.jpg')
+        book_data['cover'] = url_for('static', filename='bookshelf.png')
     return jsonify(book_data), 200 if book_data else 404
 
 @bp.route('/')
