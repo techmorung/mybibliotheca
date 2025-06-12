@@ -6,6 +6,7 @@ import secrets
 import requests
 from io import BytesIO
 import pytz
+import csv
 
 CENTRAL_AMERICA_TZ = pytz.timezone("America/Chicago")
 
@@ -335,3 +336,60 @@ def add_book_from_search():
     book.save()
     flash(f'Added "{title}" to your library.', 'success')
     return redirect(url_for('main.library'))
+
+@bp.route('/import_goodreads', methods=['POST'])
+def import_goodreads():
+    file = request.files.get('goodreads_csv')
+    if not file or not file.filename.endswith('.csv'):
+        flash('Please upload a valid Goodreads CSV file.', 'danger')
+        return redirect(url_for('main.add_book'))
+
+    stream = file.stream.read().decode('utf-8').splitlines()
+    reader = csv.DictReader(stream)
+    imported = 0
+    for row in reader:
+        title = row.get('Title')
+        author = row.get('Author')
+        # Goodreads CSV sometimes has ISBN/ISBN13 as ='978...'
+        def clean_isbn(val):
+            if not val:
+                return ""
+            val = val.strip()
+            if val.startswith('="') and val.endswith('"'):
+                val = val[2:-1]
+            return val.strip()
+        isbn = clean_isbn(row.get('ISBN13')) or clean_isbn(row.get('ISBN'))
+        date_read = row.get('Date Read')
+        want_to_read = 'to-read' in (row.get('Bookshelves') or '')
+        finish_date = None
+        if date_read:
+            try:
+                finish_date = datetime.strptime(date_read, "%Y/%m/%d").date()
+            except Exception:
+                pass
+        # Skip books with missing or blank ISBN
+        if not title or not author or not isbn or isbn == "":
+            continue
+        if not Book.query.filter_by(isbn=isbn).first():
+            # Try Google Books cover first
+            cover_url = get_google_books_cover(isbn)
+            # Fallback to OpenLibrary if Google Books fails
+            if not cover_url:
+                book_data = fetch_book_data(isbn)
+                cover_url = book_data.get('cover') if book_data else None
+            # Fallback to default if both fail
+            if not cover_url:
+                cover_url = url_for('static', filename='bookshelf.png')
+            book = Book(
+                title=title,
+                author=author,
+                isbn=isbn,
+                finish_date=finish_date,
+                want_to_read=want_to_read,
+                cover_url=cover_url
+            )
+            db.session.add(book)
+            imported += 1
+    db.session.commit()
+    flash(f'Imported {imported} books from Goodreads.', 'success')
+    return redirect(url_for('main.add_book'))
