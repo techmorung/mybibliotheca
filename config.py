@@ -4,6 +4,6 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'your_default_secret_key'
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        f"sqlite:///{os.path.join(basedir, 'site.db')}"
+        "sqlite:///books.db"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     ISBN_API_KEY = os.environ.get('ISBN_API_KEY') or 'your_isbn_api_key'
