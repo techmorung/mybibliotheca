@@ -112,6 +112,7 @@ docker compose up -d
 
    ```bash
    python run.py
+   gunicorn -w 4 -b 0.0.0.0:5054 run:app
    ```
 
    Visit: [http://127.0.0.1:5054](http://127.0.0.1:5054)
