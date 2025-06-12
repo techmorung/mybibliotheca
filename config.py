@@ -8,8 +8,8 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'your_default_secret_key'
 
     # Absolute path to the SQLite database (so it always works no matter where the app runs)
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        f"sqlite:///{os.path.join(basedir, 'books.db')}"
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:////app/data/books.db'
+
 
     # Turn off unnecessary tracking overhead
     SQLALCHEMY_TRACK_MODIFICATIONS = False
