@@ -19,11 +19,11 @@ def fetch_book_data(isbn):
         book = data[book_key]
         title = book.get('title', '')
         authors = ', '.join([a['name'] for a in book.get('authors', [])])
-        cover = book.get('cover', {}).get('large') or book.get('cover', {}).get('medium') or book.get('cover', {}).get('small')
+        cover_url = book.get('cover', {}).get('large') or book.get('cover', {}).get('medium') or book.get('cover', {}).get('small')
         return {
             'title': title,
             'author': authors,
-            'cover': cover
+            'cover': cover_url
         }
     return None
 

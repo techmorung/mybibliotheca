@@ -39,7 +39,11 @@ def reading_history():
 def fetch_book(isbn):
     book_data = fetch_book_data(isbn) or {}
     google_cover = get_google_books_cover(isbn)
-    book_data['cover'] = google_cover  # Always overwrite with Google Books cover
+    if google_cover:
+        book_data['cover'] = google_cover
+    # If neither source provides a cover, set a default
+    if not book_data.get('cover'):
+        book_data['cover'] = url_for('static', filename='default_cover.jpg')
     return jsonify(book_data), 200 if book_data else 404
 
 @bp.route('/')
@@ -88,6 +92,10 @@ def add_book():
         elif 'add' in request.form:
             # Actually add the book
             isbn = request.form['isbn']
+            # Check for duplicate ISBN
+            if Book.query.filter_by(isbn=isbn).first():
+                flash('A book with this ISBN already exists.', 'danger')
+                return render_template('add_book.html', book_data=None)
             title = request.form['title']
             author = request.form['author']
             start_date_str = request.form.get('start_date') or None
@@ -100,7 +108,7 @@ def add_book():
             cover_url = get_google_books_cover(isbn)
 
             if not cover_url:
-                flash('Warning: No cover image found on Google Books for this ISBN. A default image will be used.', 'warning')
+                flash('Warning: No cover image found on Google Books for this ISBN. A default image will be used. A manual cover URL can be added in the "edit book" section.', 'warning')
 
             book = Book(
                 title=title,
@@ -261,11 +269,18 @@ def public_library():
 def edit_book(uid):
     book = Book.query.filter_by(uid=uid).first_or_404()
     if request.method == 'POST':
+        new_isbn = request.form['isbn']
+        # Check for duplicate ISBN (excluding the current book)
+        if Book.query.filter(Book.isbn == new_isbn, Book.uid != book.uid).first():
+            flash('A book with this ISBN already exists.', 'danger')
+            return render_template('edit_book.html', book=book)
         book.title = request.form['title']
         book.author = request.form['author']
-        book.isbn = request.form['isbn']
+        book.isbn = new_isbn
+        cover_url = request.form.get('cover_url', '').strip()
+        book.cover_url = cover_url if cover_url else None
         db.session.commit()
-        flash('Book details updated.')
+        flash('Book updated.', 'success')
         return redirect(url_for('main.view_book', uid=book.uid))
     return render_template('edit_book.html', book=book)
 
@@ -298,3 +313,25 @@ def generate_month_wrapup():
     
     # Redirect to the month review endpoint
     return redirect(url_for('main.month_review', year=year, month=month))
+
+@bp.route('/add_book_from_search', methods=['POST'])
+def add_book_from_search():
+    title = request.form.get('title')
+    author = request.form.get('author')
+    isbn = request.form.get('isbn')
+    cover_url = request.form.get('cover_url')
+
+    # Prevent duplicate ISBNs
+    if isbn and Book.query.filter_by(isbn=isbn).first():
+        flash('A book with this ISBN already exists.', 'danger')
+        return redirect(url_for('main.search_books'))
+
+    book = Book(
+        title=title,
+        author=author,
+        isbn=isbn,
+        cover_url=cover_url
+    )
+    book.save()
+    flash(f'Added "{title}" to your library.', 'success')
+    return redirect(url_for('main.library'))
