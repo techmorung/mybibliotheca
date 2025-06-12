@@ -393,3 +393,13 @@ def import_goodreads():
     db.session.commit()
     flash(f'Imported {imported} books from Goodreads.', 'success')
     return redirect(url_for('main.add_book'))
+
+@bp.route('/download_db', methods=['GET'])
+def download_db():
+    db_path = current_app.config.get('SQLALCHEMY_DATABASE_URI').replace('sqlite:///', '')
+    return send_file(
+        db_path,
+        as_attachment=True,
+        download_name='books.db',
+        mimetype='application/octet-stream'
+    )
