@@ -63,6 +63,8 @@ services:
     volumes:
       - bibliotheca_data:/app/data
     restart: unless-stopped
+    environment:
+      - TIMEZONE=America/Chicago  # ✅ Set your preferred timezone here
 
 volumes:
   bibliotheca_data:
