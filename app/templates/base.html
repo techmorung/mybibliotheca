@@ -15,9 +15,6 @@
       min-height: 100vh;
       font-family: 'Georgia', serif;
     }
-      background-attachment: fixed;
-      min-height: 100vh;
-    }
     .overlay {
       background: var(--overlay-background);
       min-height: 100vh;
@@ -34,6 +31,7 @@
     h1, h2, h3 {
       font-family: 'Georgia', serif;
       color: #5a3e1b;
+    }
     a {
       color: #8d5524;
       text-decoration: none;
@@ -49,7 +47,6 @@
     .btn-link:hover {
       color: #c68642;
       text-decoration: underline;
-    }
     }
     .book-cover {
       max-height: 220px;
@@ -98,9 +95,11 @@
         </a>
         <div style="font-size: 1.1em; color: #888; margin-top: 4px;">V1.0.2 | It is highly recommended to backup your database regularly.</div>
       </div>
+      {% block footer %}
       <footer class="text-center mt-4">
         <a href="{{ url_for('main.download_db') }}" class="btn btn-primary" style="margin-top: 8px;">Download Database</a>
       </footer>
+      {% endblock %}
     </div>
   </div>
   <!-- Bootstrap JS CDN -->
