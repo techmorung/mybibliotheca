@@ -7,6 +7,7 @@ from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 import requests
 import os
+from flask import current_app
 
 def fetch_book_data(isbn):
     url = f"https://openlibrary.org/api/books?bibkeys=ISBN:{isbn}&format=json&jscmd=data"
@@ -54,7 +55,7 @@ def get_reading_streak(timezone):
     if not dates:
         return 0
 
-    # Use Central America time for "today"
+    # Use the configured timezone for "today"
     now_ca = datetime.now(timezone)
     today = now_ca.date()
 
@@ -65,8 +66,10 @@ def get_reading_streak(timezone):
             streak += 1
         else:
             break
-    current_streak = streak
-    return current_streak
+
+    # Apply the streak offset from the configuration
+    streak_offset = current_app.config.get('READING_STREAK_OFFSET', 0)
+    return streak + streak_offset
 
 def generate_month_review_image(books, month, year):
     import calendar
