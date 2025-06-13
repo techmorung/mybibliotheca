@@ -253,7 +253,7 @@ def library():
 @bp.route('/public-library')
 def public_library():
     filter_status = request.args.get('filter', 'all')
-    books_query = Book.query.order_by(Book.id.desc())
+    books_query = Book.query
     
     if filter_status == 'currently_reading':
         books_query = books_query.filter(
@@ -263,6 +263,8 @@ def public_library():
         )
     elif filter_status == 'want_to_read':
         books_query = books_query.filter(Book.want_to_read.is_(True))
+    else:  # Default "Show All" case
+        books_query = books_query.order_by(Book.finish_date.desc().nullslast(), Book.id.desc())
     
     books = books_query.all()
     return render_template('public_library.html', books=books, filter_status=filter_status)
