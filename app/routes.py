@@ -254,14 +254,16 @@ def library():
 def public_library():
     filter_status = request.args.get('filter', 'all')
     books_query = Book.query.order_by(Book.id.desc())
+    
     if filter_status == 'currently_reading':
         books_query = books_query.filter(
-            Book.finish_date is None,
-            Book.want_to_read is False,
-            Book.library_only is False
+            Book.finish_date.is_(None),
+            Book.want_to_read.isnot(True),  # Handle NULL and False
+            Book.library_only.isnot(True)  # Handle NULL and False
         )
     elif filter_status == 'want_to_read':
-        books_query = books_query.filter(Book.want_to_read is True)
+        books_query = books_query.filter(Book.want_to_read.is_(True))
+    
     books = books_query.all()
     return render_template('public_library.html', books=books, filter_status=filter_status)
 
