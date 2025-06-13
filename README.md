@@ -81,8 +81,8 @@ docker compose up -d
 | Variable              | Description                                | Default / Example         |
 |-----------------------|--------------------------------------------|---------------------------|
 | `TIMEZONE`            | Sets the app's timezone                    | `America/Chicago`         |
-| `READING_STREAK_OFFSET` | Adjusts when a reading day is counted (in minutes) | `160` (2 hours, 40 min)    |
-| `WORKERS`             | Number of Gunicorn worker processes        | `10`                      |
+| `READING_STREAK_OFFSET` | Adjusts reading day streak | `160` (160 days + new days logged)    |
+| `WORKERS`             | Number of Gunicorn worker processes        | `6`                      |
 
 ---
 
