@@ -76,6 +76,13 @@ Then run:
 ```bash
 docker compose up -d
 ```
+### 🔧 Configurable Environment Variables
+
+| Variable              | Description                                | Default / Example         |
+|-----------------------|--------------------------------------------|---------------------------|
+| `TIMEZONE`            | Sets the app's timezone                    | `America/Chicago`         |
+| `READING_STREAK_OFFSET` | Adjusts when a reading day is counted (in minutes) | `160` (2 hours, 40 min)    |
+| `WORKERS`             | Number of Gunicorn worker processes        | `10`                      |
 
 ---
 
@@ -113,8 +120,7 @@ docker compose up -d
 4. **Run the app**
 
    ```bash
-   python run.py
-   gunicorn -w 4 -b 0.0.0.0:5054 run:app
+   gunicorn -w NUMBER_OF_WORKERS -b 0.0.0.0:5054 run:app
    ```
 
    Visit: [http://127.0.0.1:5054](http://127.0.0.1:5054)

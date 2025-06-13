@@ -25,4 +25,6 @@ ENV DATABASE_URL=sqlite:////app/data/books.db
 EXPOSE 5054
 
 # Start the app with Gunicorn in production mode
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5054", "run:app"]
+# Use WORKERS environment variable for Gunicorn workers Default to 6 workers if not specified
+ENV WORKERS=6
+CMD ["sh", "-c", "gunicorn -w $WORKERS -b 0.0.0.0:5054 run:app"]
