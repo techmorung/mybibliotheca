@@ -65,6 +65,7 @@ services:
     restart: unless-stopped
     environment:
       - TIMEZONE=America/Chicago  # ✅ Set your preferred timezone here
+      - WORKERS=6  # Set the number of Gunicorn workers to 6
 
 volumes:
   bibliotheca_data:

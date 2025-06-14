@@ -90,13 +90,18 @@ def add_book():
             # Re-render the form with fetched data
             return render_template('add_book.html', book_data=book_data)
         elif 'add' in request.form:
-            # Actually add the book
+            # Validate required fields
+            title = request.form['title'].strip()
+            if not title:
+                flash('Error: Title is required to add a book.', 'danger')
+                return render_template('add_book.html', book_data=None)
+
             isbn = request.form['isbn']
             # Check for duplicate ISBN
             if Book.query.filter_by(isbn=isbn).first():
                 flash('A book with this ISBN already exists.', 'danger')
                 return render_template('add_book.html', book_data=None)
-            title = request.form['title']
+
             author = request.form['author']
             start_date_str = request.form.get('start_date') or None
             finish_date_str = request.form.get('finish_date') or None
@@ -121,6 +126,7 @@ def add_book():
                 library_only=library_only
             )
             book.save()
+            flash(f'Book "{title}" added successfully.', 'success')
             return redirect(url_for('main.index'))
 
     return render_template('add_book.html', book_data=book_data)
