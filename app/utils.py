@@ -26,18 +26,29 @@ def fetch_book_data(isbn):
         }
     return None
 
-def get_google_books_cover(isbn):
+def get_google_books_cover(isbn, fetch_title_author=False):
     url = f"https://www.googleapis.com/books/v1/volumes?q=isbn:{isbn}"
     try:
         resp = requests.get(url, timeout=5)
         data = resp.json()
         items = data.get("items")
         if items:
-            image_links = items[0]["volumeInfo"].get("imageLinks", {})
-            # Prefer medium/thumbnail, fallback to smallThumbnail
-            return image_links.get("thumbnail") or image_links.get("smallThumbnail")
+            volume_info = items[0]["volumeInfo"]
+            image_links = volume_info.get("imageLinks", {})
+            cover_url = image_links.get("thumbnail") or image_links.get("smallThumbnail")
+            if fetch_title_author:
+                title = volume_info.get('title')
+                authors = ", ".join(volume_info.get('authors', []))
+                return {
+                    'cover': cover_url,
+                    'title': title,
+                    'author': authors
+                }
+            return cover_url
     except Exception:
         pass
+    if fetch_title_author:
+        return None # Or return a dict with None values if preferred
     return None
 
 def format_date(date):
