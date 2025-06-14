@@ -6,7 +6,7 @@ import secrets
 import requests
 from io import BytesIO
 import pytz
-import csv
+import csv # Ensure csv is imported
 
 app = Blueprint('app', __name__)
 bp = Blueprint('main', __name__)
@@ -420,3 +420,87 @@ def download_db():
         download_name='books.db',
         mimetype='application/octet-stream'
     )
+
+@bp.route('/bulk_import', methods=['GET', 'POST'])
+def bulk_import():
+    if request.method == 'POST':
+        if 'csv_file' not in request.files:
+            flash('No file part', 'danger')
+            return redirect(request.url)
+        file = request.files['csv_file']
+        if file.filename == '':
+            flash('No selected file', 'danger')
+            return redirect(request.url)
+        if file and file.filename.endswith('.csv'):
+            try:
+                # Read CSV file
+                csv_file = csv.reader(file.stream.read().decode("utf-8").splitlines())
+                default_status = request.form.get('default_status', 'library_only')
+                imported_count = 0
+                failed_count = 0
+                failed_isbns = []
+
+                for row in csv_file:
+                    if not row:  # Skip empty rows
+                        continue
+                    isbn = row[0].strip()
+                    if not isbn: # Skip rows with empty ISBN
+                        continue
+
+                    # Check if book already exists
+                    if Book.get_book_by_isbn(isbn):
+                        failed_count += 1
+                        failed_isbns.append(f"{isbn} (already exists)")
+                        continue
+
+                    book_data = fetch_book_data(isbn)
+                    if not book_data:
+                        google_book_data = get_google_books_cover(isbn, fetch_title_author=True)
+                        if google_book_data and google_book_data.get('title') and google_book_data.get('author'):
+                            book_data = google_book_data
+                        else:
+                            failed_count += 1
+                            failed_isbns.append(f"{isbn} (data not found)")
+                            continue
+                    
+                    title = book_data.get('title')
+                    author = book_data.get('author')
+                    cover_url = book_data.get('cover') or get_google_books_cover(isbn)
+
+
+                    if not title or not author:
+                        failed_count += 1
+                        failed_isbns.append(f"{isbn} (missing title/author)")
+                        continue
+
+                    want_to_read = default_status == 'want_to_read'
+                    library_only = default_status == 'library_only'
+                    start_date = date.today() if default_status == 'reading' else None
+
+                    new_book = Book(
+                        title=title,
+                        author=author,
+                        isbn=isbn,
+                        cover_url=cover_url,
+                        want_to_read=want_to_read,
+                        library_only=library_only,
+                        start_date=start_date
+                    )
+                    new_book.save()
+                    imported_count += 1
+
+                if imported_count > 0:
+                    flash(f'Successfully imported {imported_count} books.', 'success')
+                if failed_count > 0:
+                    flash(f'Failed to import {failed_count} books: {", ".join(failed_isbns)}', 'danger')
+                return redirect(url_for('main.index'))
+
+            except Exception as e:
+                current_app.logger.error(f"Error during bulk import: {e}")
+                flash(f'An error occurred during bulk import: {e}', 'danger')
+                return redirect(request.url)
+        else:
+            flash('Invalid file type. Please upload a CSV file.', 'danger')
+            return redirect(request.url)
+
+    return render_template('bulk_import.html')
