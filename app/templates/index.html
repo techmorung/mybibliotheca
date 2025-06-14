@@ -9,14 +9,16 @@
 <ul class="list-group mb-4">
   {% for book in currently_reading %}
     <li class="list-group-item d-flex align-items-center">
-      {% if book.cover_url %}
-        <img src="{{ book.cover_url }}" alt="cover"
-             style="height:60px;width:auto;margin-right:16px;border-radius:4px;"
-             onerror="this.onerror=null;this.src='{{ url_for('static', filename='bookshelf.png') }}';">
-      {% else %}
-        <img src="{{ url_for('static', filename='bookshelf.png') }}" alt="cover"
-             style="height:60px;width:auto;margin-right:16px;border-radius:4px;">
-      {% endif %}
+      <a href="{{ url_for('main.view_book', uid=book.uid) }}">
+        {% if book.cover_url %}
+          <img src="{{ book.cover_url }}" alt="cover"
+               style="height:60px;width:auto;margin-right:16px;border-radius:4px;"
+               onerror="this.onerror=null;this.src='{{ url_for('static', filename='bookshelf.png') }}';">
+        {% else %}
+          <img src="{{ url_for('static', filename='bookshelf.png') }}" alt="cover"
+               style="height:60px;width:auto;margin-right:16px;border-radius:4px;">
+        {% endif %}
+      </a>
       <div>
         <a href="{{ url_for('main.view_book', uid=book.uid) }}"><strong>{{ book.title }}</strong></a>
         <br>
@@ -32,14 +34,16 @@
 <ul class="list-group mb-4">
   {% for book in want_to_read %}
     <li class="list-group-item d-flex align-items-center">
-      {% if book.cover_url %}
-        <img src="{{ book.cover_url }}" alt="cover"
-             style="height:60px;width:auto;margin-right:16px;border-radius:4px;"
-             onerror="this.onerror=null;this.src='{{ url_for('static', filename='bookshelf.png') }}';">
-      {% else %}
-        <img src="{{ url_for('static', filename='bookshelf.png') }}" alt="cover"
-             style="height:60px;width:auto;margin-right:16px;border-radius:4px;">
-      {% endif %}
+      <a href="{{ url_for('main.view_book', uid=book.uid) }}">
+        {% if book.cover_url %}
+          <img src="{{ book.cover_url }}" alt="cover"
+               style="height:60px;width:auto;margin-right:16px;border-radius:4px;"
+               onerror="this.onerror=null;this.src='{{ url_for('static', filename='bookshelf.png') }}';">
+        {% else %}
+          <img src="{{ url_for('static', filename='bookshelf.png') }}" alt="cover"
+               style="height:60px;width:auto;margin-right:16px;border-radius:4px;">
+        {% endif %}
+      </a>
       <div>
         <a href="{{ url_for('main.view_book', uid=book.uid) }}"><strong>{{ book.title }}</strong></a>
         <br>
@@ -60,14 +64,16 @@
 <ul class="list-group mb-2">
   {% for book in finished[:5] %}
     <li class="list-group-item d-flex align-items-center">
-      {% if book.cover_url %}
-        <img src="{{ book.cover_url }}" alt="cover"
-             style="height:60px;width:auto;margin-right:16px;border-radius:4px;"
-             onerror="this.onerror=null;this.src='{{ url_for('static', filename='bookshelf.png') }}';">
-      {% else %}
-        <img src="{{ url_for('static', filename='bookshelf.png') }}" alt="cover"
-             style="height:60px;width:auto;margin-right:16px;border-radius:4px;">
-      {% endif %}
+      <a href="{{ url_for('main.view_book', uid=book.uid) }}">
+        {% if book.cover_url %}
+          <img src="{{ book.cover_url }}" alt="cover"
+               style="height:60px;width:auto;margin-right:16px;border-radius:4px;"
+               onerror="this.onerror=null;this.src='{{ url_for('static', filename='bookshelf.png') }}';">
+        {% else %}
+          <img src="{{ url_for('static', filename='bookshelf.png') }}" alt="cover"
+               style="height:60px;width:auto;margin-right:16px;border-radius:4px;">
+        {% endif %}
+      </a>
       <div>
         <a href="{{ url_for('main.view_book', uid=book.uid) }}"><strong>{{ book.title }}</strong></a>
         <br>
@@ -86,14 +92,16 @@
   <ul class="list-group">
     {% for book in finished[5:] %}
       <li class="list-group-item d-flex align-items-center">
-        {% if book.cover_url %}
-          <img src="{{ book.cover_url }}" alt="cover"
-               style="height:60px;width:auto;margin-right:16px;border-radius:4px;"
-               onerror="this.onerror=null;this.src='{{ url_for('static', filename='bookshelf.png') }}';">
-        {% else %}
-          <img src="{{ url_for('static', filename='bookshelf.png') }}" alt="cover"
-               style="height:60px;width:auto;margin-right:16px;border-radius:4px;">
-        {% endif %}
+        <a href="{{ url_for('main.view_book', uid=book.uid) }}">
+          {% if book.cover_url %}
+            <img src="{{ book.cover_url }}" alt="cover"
+                 style="height:60px;width:auto;margin-right:16px;border-radius:4px;"
+                 onerror="this.onerror=null;this.src='{{ url_for('static', filename='bookshelf.png') }}';">
+          {% else %}
+            <img src="{{ url_for('static', filename='bookshelf.png') }}" alt="cover"
+                 style="height:60px;width:auto;margin-right:16px;border-radius:4px;">
+          {% endif %}
+        </a>
         <div>
           <a href="{{ url_for('main.view_book', uid=book.uid) }}"><strong>{{ book.title }}</strong></a>
           <br>
