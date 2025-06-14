@@ -78,17 +78,24 @@ def add_book():
     book_data = None
     if request.method == 'POST':
         if 'fetch' in request.form:
-            # Only fetch book data, do not add book
-            isbn = request.form['isbn']
+            # Fetch book data using the provided ISBN
+            isbn = request.form['isbn'].strip()
+            if not isbn:
+                flash('Error: ISBN is required to fetch book data.', 'danger')
+                return render_template('add_book.html', book_data=None)
+
             book_data = fetch_book_data(isbn)
-            # Overwrite cover with Google Books
-            google_cover = get_google_books_cover(isbn)
-            if book_data:
-                book_data['cover'] = google_cover
+            if not book_data:
+                flash('No book data found for the provided ISBN.', 'warning')
             else:
-                book_data = {'cover': google_cover}
+                # Overwrite cover with Google Books if available
+                google_cover = get_google_books_cover(isbn)
+                if google_cover:
+                    book_data['cover'] = google_cover
+
             # Re-render the form with fetched data
             return render_template('add_book.html', book_data=book_data)
+
         elif 'add' in request.form:
             # Validate required fields
             title = request.form['title'].strip()

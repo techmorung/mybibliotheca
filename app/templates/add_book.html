@@ -2,7 +2,7 @@
 {% block title %}Add Book{% endblock %}
 {% block content %}
 <h1>Add a New Book</h1>
-<form method="post" onsubmit="return validateForm()">
+<form method="post">
   <button type="button" class="btn btn-secondary" onclick="startScanner()">Scan Barcode</button>
   <!-- Use type="tel" and pattern="\d*" for mobile keypad -->
   <input id="isbn" name="isbn" class="form-control" value="{{ request.form.isbn or '' }}" type="tel" pattern="\d*" inputmode="numeric">
