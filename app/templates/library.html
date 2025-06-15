@@ -55,9 +55,68 @@
     margin-bottom: 8px;
     text-align: center;
   }
+  .filter-section {
+    background: rgba(255,255,255,0.9);
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #e0c9a6;
+  }
 </style>
 
 <h1 class="mb-4">All Books in My Library</h1>
+
+<!-- Filter Section -->
+<div class="filter-section">
+  <form method="GET" class="row g-3">
+    <div class="col-md-3">
+      <label for="search" class="form-label">Search</label>
+      <input type="text" class="form-control" id="search" name="search" 
+             value="{{ current_search }}" placeholder="Title, author, description...">
+    </div>
+    <div class="col-md-3">
+      <label for="category" class="form-label">Category</label>
+      <select class="form-select" id="category" name="category">
+        <option value="">All Categories</option>
+        {% for category in categories %}
+          <option value="{{ category }}" {% if category == current_category %}selected{% endif %}>
+            {{ category }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label for="publisher" class="form-label">Publisher</label>
+      <select class="form-select" id="publisher" name="publisher">
+        <option value="">All Publishers</option>
+        {% for publisher in publishers %}
+          <option value="{{ publisher }}" {% if publisher == current_publisher %}selected{% endif %}>
+            {{ publisher }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <label for="language" class="form-label">Language</label>
+      <select class="form-select" id="language" name="language">
+        <option value="">All Languages</option>
+        {% for language in languages %}
+          <option value="{{ language }}" {% if language == current_language %}selected{% endif %}>
+            {{ language }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-1">
+      <label>&nbsp;</label>
+      <button type="submit" class="btn btn-primary d-block">Filter</button>
+    </div>
+  </form>
+  <div class="mt-2">
+    <a href="{{ url_for('main.library') }}" class="btn btn-secondary btn-sm">Clear Filters</a>
+    <span class="ms-3 text-muted">Showing {{ books|length }} book(s)</span>
+  </div>
+</div>
 <div class="bookshelf-bg">
   <div class="bookshelf-row">
     {% for book in books %}
@@ -74,6 +133,28 @@
         <div class="book-author">
           {{ book.author }}
         </div>
+        {% if book.published_date %}
+          <div style="font-size:0.8em; color:#666; margin-bottom:2px;">{{ book.published_date }}</div>
+        {% endif %}
+        {% if book.page_count %}
+          <div style="font-size:0.8em; color:#666; margin-bottom:2px;">{{ book.page_count }} pages</div>
+        {% endif %}
+        {% if book.publisher %}
+          <div style="font-size:0.8em; color:#666; margin-bottom:4px;">{{ book.publisher }}</div>
+        {% endif %}
+        {% if book.categories %}
+          <div style="font-size:0.75em; color:#888; margin-bottom:4px; text-align:center;">
+            {% for category in book.categories.split(',')[:2] %}
+              <span class="badge bg-light text-dark me-1">{{ category.strip() }}</span>
+            {% endfor %}
+          </div>
+        {% endif %}
+        {% if book.average_rating %}
+          <div style="font-size:0.8em; color:#f39c12; margin-bottom:4px;">
+            ⭐ {{ "%.1f"|format(book.average_rating) }}
+            {% if book.rating_count %}({{ book.rating_count }}){% endif %}
+          </div>
+        {% endif %}
         <div class="book-badges">
           {% if book.want_to_read %}<span class="badge bg-info">Want to Read</span>{% endif %}
           {% if not book.finish_date and not book.want_to_read and not book.library_only %}<span class="badge bg-warning">Currently Reading</span>{% endif %}

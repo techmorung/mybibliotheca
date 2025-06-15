@@ -15,8 +15,17 @@ class Book(db.Model):
     cover_url = db.Column(db.String(512), nullable=True)
     want_to_read = db.Column(db.Boolean, default=False)
     library_only = db.Column(db.Boolean, default=False)
+    # New metadata fields
+    description = db.Column(db.Text, nullable=True)
+    published_date = db.Column(db.String(50), nullable=True)
+    page_count = db.Column(db.Integer, nullable=True)
+    categories = db.Column(db.String(500), nullable=True)  # Store as comma-separated string
+    publisher = db.Column(db.String(255), nullable=True)
+    language = db.Column(db.String(10), nullable=True)
+    average_rating = db.Column(db.Float, nullable=True)
+    rating_count = db.Column(db.Integer, nullable=True)
 
-    def __init__(self, title, author, isbn, start_date=None, finish_date=None, cover_url=None, want_to_read=False, library_only=False, **kwargs):
+    def __init__(self, title, author, isbn, start_date=None, finish_date=None, cover_url=None, want_to_read=False, library_only=False, description=None, published_date=None, page_count=None, categories=None, publisher=None, language=None, average_rating=None, rating_count=None, **kwargs):
         self.title = title
         self.author = author
         self.isbn = isbn
@@ -25,6 +34,14 @@ class Book(db.Model):
         self.cover_url = cover_url
         self.want_to_read = want_to_read
         self.library_only = library_only
+        self.description = description
+        self.published_date = published_date
+        self.page_count = page_count
+        self.categories = categories
+        self.publisher = publisher
+        self.language = language
+        self.average_rating = average_rating
+        self.rating_count = rating_count
         # If you have other fields, set them here or with kwargs
 
     def save(self):
