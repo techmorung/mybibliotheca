@@ -26,7 +26,7 @@ def create_app():
                 
                 if missing_columns:
                     print(f"🔄 Adding missing columns: {missing_columns}")
-                    with db.engine.connect() as conn:
+                    with db.engine.begin() as conn:  # Use `begin()` for transaction handling
                         for col_name in missing_columns:
                             if col_name in ['page_count', 'rating_count']:
                                 conn.execute(text(f"ALTER TABLE book ADD COLUMN {col_name} INTEGER"))
@@ -40,7 +40,6 @@ def create_app():
                                 conn.execute(text(f"ALTER TABLE book ADD COLUMN {col_name} VARCHAR(50)"))
                             else:  # description
                                 conn.execute(text(f"ALTER TABLE book ADD COLUMN {col_name} TEXT"))
-                        conn.commit()
                     print("✅ Schema migration completed.")
             except Exception as e:
                 print(f"⚠️  Schema migration failed: {e}")
