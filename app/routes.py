@@ -119,6 +119,32 @@ def add_book():
 
             cover_url = get_google_books_cover(isbn)
 
+            # Get additional metadata from Google Books API first, then fallback to OpenLibrary
+            google_data = get_google_books_cover(isbn, fetch_title_author=True)
+            if google_data:
+                description = google_data.get('description')
+                published_date = google_data.get('published_date')
+                page_count = google_data.get('page_count')
+                categories = google_data.get('categories')
+                publisher = google_data.get('publisher')
+                language = google_data.get('language')
+                average_rating = google_data.get('average_rating')
+                rating_count = google_data.get('rating_count')
+            else:
+                # Fallback to OpenLibrary data
+                ol_data = fetch_book_data(isbn)
+                if ol_data:
+                    description = ol_data.get('description')
+                    published_date = ol_data.get('published_date')
+                    page_count = ol_data.get('page_count')
+                    categories = ol_data.get('categories')
+                    publisher = ol_data.get('publisher')
+                    language = ol_data.get('language')
+                    average_rating = None
+                    rating_count = None
+                else:
+                    description = published_date = page_count = categories = publisher = language = average_rating = rating_count = None
+
             if not cover_url:
                 flash('Warning: No cover image found on Google Books for this ISBN. A default image will be used. A manual cover URL can be added in the "edit book" section.', 'warning')
 
@@ -130,7 +156,15 @@ def add_book():
                 finish_date=finish_date,
                 cover_url=cover_url,
                 want_to_read=want_to_read,
-                library_only=library_only
+                library_only=library_only,
+                description=description,
+                published_date=published_date,
+                page_count=page_count,
+                categories=categories,
+                publisher=publisher,
+                language=language,
+                average_rating=average_rating,
+                rating_count=rating_count
             )
             book.save()
             flash(f'Book "{title}" added successfully.', 'success')
@@ -260,8 +294,55 @@ def search_books():
 
 @bp.route('/library')
 def library():
-    books = Book.get_all_books()
-    return render_template('library.html', books=books)
+    # Get filter parameters from URL
+    category_filter = request.args.get('category', '')
+    publisher_filter = request.args.get('publisher', '')
+    language_filter = request.args.get('language', '')
+    search_query = request.args.get('search', '')
+    
+    books_query = Book.query
+    
+    # Apply filters
+    if category_filter:
+        books_query = books_query.filter(Book.categories.contains(category_filter))
+    if publisher_filter:
+        books_query = books_query.filter(Book.publisher.ilike(f'%{publisher_filter}%'))
+    if language_filter:
+        books_query = books_query.filter(Book.language == language_filter)
+    if search_query:
+        books_query = books_query.filter(
+            (Book.title.ilike(f'%{search_query}%')) |
+            (Book.author.ilike(f'%{search_query}%')) |
+            (Book.description.ilike(f'%{search_query}%'))
+        )
+    
+    books = books_query.all()
+    
+    # Get distinct values for filter dropdowns
+    all_books = Book.query.all()
+    categories = set()
+    publishers = set()
+    languages = set()
+    
+    for book in all_books:
+        if book.categories:
+            categories.update([cat.strip() for cat in book.categories.split(',')])
+        if book.publisher:
+            publishers.add(book.publisher)
+        if book.language:
+            languages.add(book.language)
+    
+    return render_template(
+        'library.html', 
+        books=books,
+        categories=sorted(categories),
+        publishers=sorted(publishers),
+        languages=sorted(languages),
+        current_category=category_filter,
+        current_publisher=publisher_filter,
+        current_language=language_filter,
+        current_search=search_query
+    )
 
 @bp.route('/public-library')
 def public_library():
@@ -296,6 +377,16 @@ def edit_book(uid):
         book.isbn = new_isbn
         cover_url = request.form.get('cover_url', '').strip()
         book.cover_url = cover_url if cover_url else None
+        
+        # Update new metadata fields
+        book.description = request.form.get('description', '').strip() or None
+        book.published_date = request.form.get('published_date', '').strip() or None
+        book.page_count = int(request.form.get('page_count')) if request.form.get('page_count', '').strip() else None
+        book.publisher = request.form.get('publisher', '').strip() or None
+        book.language = request.form.get('language', '').strip() or None
+        book.categories = request.form.get('categories', '').strip() or None
+        book.average_rating = float(request.form.get('average_rating')) if request.form.get('average_rating', '').strip() else None
+        book.rating_count = int(request.form.get('rating_count')) if request.form.get('rating_count', '').strip() else None
         db.session.commit()
         flash('Book updated.', 'success')
         return redirect(url_for('main.view_book', uid=book.uid))
@@ -344,11 +435,36 @@ def add_book_from_search():
         flash('A book with this ISBN already exists.', 'danger')
         return redirect(url_for('main.search_books'))
 
+    # Get additional metadata if available
+    if isbn:
+        google_data = get_google_books_cover(isbn, fetch_title_author=True)
+        if google_data:
+            description = google_data.get('description')
+            published_date = google_data.get('published_date')
+            page_count = google_data.get('page_count')
+            categories = google_data.get('categories')
+            publisher = google_data.get('publisher')
+            language = google_data.get('language')
+            average_rating = google_data.get('average_rating')
+            rating_count = google_data.get('rating_count')
+        else:
+            description = published_date = page_count = categories = publisher = language = average_rating = rating_count = None
+    else:
+        description = published_date = page_count = categories = publisher = language = average_rating = rating_count = None
+
     book = Book(
         title=title,
         author=author,
         isbn=isbn,
-        cover_url=cover_url
+        cover_url=cover_url,
+        description=description,
+        published_date=published_date,
+        page_count=page_count,
+        categories=categories,
+        publisher=publisher,
+        language=language,
+        average_rating=average_rating,
+        rating_count=rating_count
     )
     book.save()
     flash(f'Added "{title}" to your library.', 'success')
@@ -388,22 +504,49 @@ def import_goodreads():
         if not title or not author or not isbn or isbn == "":
             continue
         if not Book.query.filter_by(isbn=isbn).first():
-            # Try Google Books cover first
-            cover_url = get_google_books_cover(isbn)
-            # Fallback to OpenLibrary if Google Books fails
-            if not cover_url:
+            # Try Google Books first for comprehensive metadata
+            google_data = get_google_books_cover(isbn, fetch_title_author=True)
+            if google_data:
+                cover_url = google_data.get('cover')
+                description = google_data.get('description')
+                published_date = google_data.get('published_date')
+                page_count = google_data.get('page_count')
+                categories = google_data.get('categories')
+                publisher = google_data.get('publisher')
+                language = google_data.get('language')
+                average_rating = google_data.get('average_rating')
+                rating_count = google_data.get('rating_count')
+            else:
+                # Fallback to OpenLibrary if Google Books fails
                 book_data = fetch_book_data(isbn)
-                cover_url = book_data.get('cover') if book_data else None
-            # Fallback to default if both fail
-            if not cover_url:
-                cover_url = url_for('static', filename='bookshelf.png')
+                if book_data:
+                    cover_url = book_data.get('cover')
+                    description = book_data.get('description')
+                    published_date = book_data.get('published_date')
+                    page_count = book_data.get('page_count')
+                    categories = book_data.get('categories')
+                    publisher = book_data.get('publisher')
+                    language = book_data.get('language')
+                    average_rating = rating_count = None
+                else:
+                    cover_url = url_for('static', filename='bookshelf.png')
+                    description = published_date = page_count = categories = publisher = language = average_rating = rating_count = None
+            
             book = Book(
                 title=title,
                 author=author,
                 isbn=isbn,
                 finish_date=finish_date,
                 want_to_read=want_to_read,
-                cover_url=cover_url
+                cover_url=cover_url,
+                description=description,
+                published_date=published_date,
+                page_count=page_count,
+                categories=categories,
+                publisher=publisher,
+                language=language,
+                average_rating=average_rating,
+                rating_count=rating_count
             )
             db.session.add(book)
             imported += 1
@@ -462,10 +605,25 @@ def bulk_import():
                             failed_count += 1
                             failed_isbns.append(f"{isbn} (data not found)")
                             continue
+                    else:
+                        # Enhance OpenLibrary data with Google Books data
+                        google_data = get_google_books_cover(isbn, fetch_title_author=True)
+                        if google_data:
+                            for key, value in google_data.items():
+                                if value and not book_data.get(key):
+                                    book_data[key] = value
                     
                     title = book_data.get('title')
                     author = book_data.get('author')
                     cover_url = book_data.get('cover') or get_google_books_cover(isbn)
+                    description = book_data.get('description')
+                    published_date = book_data.get('published_date')
+                    page_count = book_data.get('page_count')
+                    categories = book_data.get('categories')
+                    publisher = book_data.get('publisher')
+                    language = book_data.get('language')
+                    average_rating = book_data.get('average_rating')
+                    rating_count = book_data.get('rating_count')
 
 
                     if not title or not author:
@@ -484,7 +642,15 @@ def bulk_import():
                         cover_url=cover_url,
                         want_to_read=want_to_read,
                         library_only=library_only,
-                        start_date=start_date
+                        start_date=start_date,
+                        description=description,
+                        published_date=published_date,
+                        page_count=page_count,
+                        categories=categories,
+                        publisher=publisher,
+                        language=language,
+                        average_rating=average_rating,
+                        rating_count=rating_count
                     )
                     new_book.save()
                     imported_count += 1

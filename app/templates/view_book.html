@@ -5,8 +5,46 @@
 {% if cover_url %}
   <img src="{{ cover_url }}" alt="Book Cover" class="book-cover mb-3">
 {% endif %}
-<p>Author: {{ book.author }}</p>
-<p>ISBN: {{ book.isbn }}</p>
+<div class="row">
+  <div class="col-md-6">
+    <p><strong>Author:</strong> {{ book.author }}</p>
+    <p><strong>ISBN:</strong> {{ book.isbn }}</p>
+    {% if book.published_date %}
+      <p><strong>Published:</strong> {{ book.published_date }}</p>
+    {% endif %}
+    {% if book.publisher %}
+      <p><strong>Publisher:</strong> {{ book.publisher }}</p>
+    {% endif %}
+    {% if book.page_count %}
+      <p><strong>Pages:</strong> {{ book.page_count }}</p>
+    {% endif %}
+    {% if book.language %}
+      <p><strong>Language:</strong> {{ book.language }}</p>
+    {% endif %}
+  </div>
+  <div class="col-md-6">
+    {% if book.categories %}
+      <p><strong>Categories:</strong> 
+        {% for category in book.categories.split(',') %}
+          <span class="badge bg-secondary me-1">{{ category.strip() }}</span>
+        {% endfor %}
+      </p>
+    {% endif %}
+    {% if book.average_rating %}
+      <p><strong>Rating:</strong> 
+        <span style="color:#f39c12;">⭐ {{ "%.1f"|format(book.average_rating) }}</span>
+        {% if book.rating_count %}({{ book.rating_count }} ratings){% endif %}
+      </p>
+    {% endif %}
+  </div>
+</div>
+
+{% if book.description %}
+  <div class="mt-3">
+    <h5>Description</h5>
+    <p style="text-align: justify;">{{ book.description }}</p>
+  </div>
+{% endif %}
 
 <!-- Status Update Form -->
 <form method="post" action="{{ url_for('main.update_status', uid=book.uid) }}" class="mb-3">

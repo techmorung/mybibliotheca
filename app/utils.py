@@ -19,10 +19,28 @@ def fetch_book_data(isbn):
         title = book.get('title', '')
         authors = ', '.join([a['name'] for a in book.get('authors', [])])
         cover_url = book.get('cover', {}).get('large') or book.get('cover', {}).get('medium') or book.get('cover', {}).get('small')
+        
+        # Extract additional metadata
+        description = book.get('notes', {}).get('value') if isinstance(book.get('notes'), dict) else book.get('notes')
+        published_date = book.get('publish_date', '')
+        page_count = book.get('number_of_pages')
+        subjects = book.get('subjects', [])
+        categories = ', '.join([s['name'] if isinstance(s, dict) else str(s) for s in subjects[:5]])  # Limit to 5 categories
+        publishers = book.get('publishers', [])
+        publisher = publishers[0]['name'] if publishers and isinstance(publishers[0], dict) else (publishers[0] if publishers else '')
+        languages = book.get('languages', [])
+        language = languages[0]['key'].split('/')[-1] if languages and isinstance(languages[0], dict) else (languages[0] if languages else '')
+        
         return {
             'title': title,
             'author': authors,
-            'cover': cover_url
+            'cover': cover_url,
+            'description': description,
+            'published_date': published_date,
+            'page_count': page_count,
+            'categories': categories,
+            'publisher': publisher,
+            'language': language
         }
     return None
 
@@ -36,13 +54,31 @@ def get_google_books_cover(isbn, fetch_title_author=False):
             volume_info = items[0]["volumeInfo"]
             image_links = volume_info.get("imageLinks", {})
             cover_url = image_links.get("thumbnail") or image_links.get("smallThumbnail")
+            
             if fetch_title_author:
                 title = volume_info.get('title')
                 authors = ", ".join(volume_info.get('authors', []))
+                description = volume_info.get('description', '')
+                published_date = volume_info.get('publishedDate', '')
+                page_count = volume_info.get('pageCount')
+                categories = ', '.join(volume_info.get('categories', []))
+                publisher = volume_info.get('publisher', '')
+                language = volume_info.get('language', '')
+                average_rating = volume_info.get('averageRating')
+                rating_count = volume_info.get('ratingsCount')
+                
                 return {
                     'cover': cover_url,
                     'title': title,
-                    'author': authors
+                    'author': authors,
+                    'description': description,
+                    'published_date': published_date,
+                    'page_count': page_count,
+                    'categories': categories,
+                    'publisher': publisher,
+                    'language': language,
+                    'average_rating': average_rating,
+                    'rating_count': rating_count
                 }
             return cover_url
     except Exception:
