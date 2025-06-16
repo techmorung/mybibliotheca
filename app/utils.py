@@ -120,7 +120,7 @@ def get_reading_streak(timezone):
         else:
             break  # Stop counting if a day is missed
 
-    return streak
+    return streak + streak_offset
 
 def generate_month_review_image(books, month, year):
     import calendar
