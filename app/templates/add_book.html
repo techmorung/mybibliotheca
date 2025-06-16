@@ -27,12 +27,6 @@
 </form>
 <a href="{{ url_for('main.index') }}">Back to list</a>
 
-<form action="{{ url_for('main.import_goodreads') }}" method="post" enctype="multipart/form-data" class="mb-4">
-  <label for="goodreads_csv">Import Goodreads CSV:</label>
-  <input type="file" name="goodreads_csv" id="goodreads_csv" accept=".csv" required>
-  <button type="submit" class="btn btn-primary">Import from Goodreads</button>
-</form>
-
 <script src="https://unpkg.com/@ericblade/quagga2@1.2.6/dist/quagga.min.js"></script>
 <script>
 let quaggaStarted = false;
@@ -81,15 +75,6 @@ function startScanner() {
       }
     }
   });
-}
-
-function validateForm() {
-  const title = document.getElementById('title').value.trim();
-  if (!title) {
-    alert('Error: Title is required to add a book.');
-    return false;
-  }
-  return true;
 }
 </script>
 {% endblock %}

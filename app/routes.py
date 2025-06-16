@@ -707,7 +707,7 @@ def bulk_import():
 
             except Exception as e:
                 current_app.logger.error(f"Error during bulk import: {e}")
-                flash(f'An error occurred during bulk import: {e}', 'danger')
+                flash('An error occurred during the bulk import process. Please try again later.', 'danger')
                 return redirect(request.url)
         else:
             flash('Invalid file type. Please upload a CSV file.', 'danger')
