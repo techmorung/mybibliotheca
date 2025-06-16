@@ -118,7 +118,7 @@ docker exec -it bibliotheca-bibliotheca-1 python test_complete_auth.py
 
 ### Admin Credentials
 - **Username**: `admin`
-- **Default Password**: `admin123` (should be changed in production)
+- **Default Password**: `changeme123` (should be changed in production)
 
 ## Validation Results
 
