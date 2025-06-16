@@ -2,6 +2,8 @@
 
 **Bibliotheca** is a self-hosted personal library and reading tracker web app built with Flask. It lets you log, organize, and visualize your reading journey. Add books by ISBN, track reading progress, log daily reading, and generate monthly wrap-up images of your finished titles.
 
+🆕 **Multi-User Features**: Multi-user authentication, user data isolation, admin management, and secure password handling.
+
 ---
 
 ## ✨ Features
@@ -12,6 +14,8 @@
 - 🖼️ **Monthly Wrap-Ups**: Generate shareable image collages of books completed each month.
 - 🔎 **Search**: Find and import books using the Google Books API.
 - 📱 **Responsive UI**: Clean, mobile-friendly interface built with Bootstrap.
+- 🔐 **Multi-User Support**: Secure authentication with user data isolation
+- 👤 **Admin Management**: Administrative tools and user management
 
 ---
 
@@ -81,9 +85,57 @@ docker compose up -d
 
 | Variable              | Description                                | Default / Example         |
 |-----------------------|--------------------------------------------|---------------------------|
+| `SECRET_KEY`          | Flask secret key for sessions             | `auto-generated`          |
+| `SECURITY_PASSWORD_SALT` | Password hashing salt               | `auto-generated`          |
+| `ADMIN_EMAIL`         | Default admin email                        | `admin@bibliotheca.local` |
+| `ADMIN_USERNAME`      | Default admin username                     | `admin`                   |
+| `ADMIN_PASSWORD`      | Default admin password                     | `changeme123`             |
 | `TIMEZONE`            | Sets the app's timezone                    | `America/Chicago`         |
 | `READING_STREAK_OFFSET` | Adjusts reading day streak | `160` (160 days + new days logged)    |
 | `WORKERS`             | Number of Gunicorn worker processes        | `6`                      |
+
+---
+
+## 🔐 Authentication & User Management
+
+### First Time Setup
+
+Bibliotheca automatically creates an admin user during first run:
+- **Username**: `admin` (customizable via `ADMIN_USERNAME`)
+- **Email**: `admin@bibliotheca.local` (customizable via `ADMIN_EMAIL`)
+- **Password**: `changeme123` (customizable via `ADMIN_PASSWORD`)
+
+⚠️ **Important**: Change the default admin password after first login!
+
+### Admin Tools
+
+Use the built-in admin tools for password management:
+
+```bash
+# Reset admin password (interactive)
+docker exec -it bibliotheca python3 admin_tools.py reset-admin-password
+
+# Create additional admin user
+docker exec -it bibliotheca python3 admin_tools.py create-admin
+
+# List all users
+docker exec -it bibliotheca python3 admin_tools.py list-users
+
+# System statistics
+docker exec -it bibliotheca python3 admin_tools.py system-stats
+```
+
+### Migration from V1.x
+
+Existing single-user installations are automatically migrated to multi-user:
+- All existing books are assigned to the admin user
+- No data is lost during migration
+- V1.x functionality remains unchanged
+
+📖 **Documentation:**
+- **[AUTHENTICATION.md](AUTHENTICATION.md)** - Complete authentication guide
+- **[ADMIN_TOOLS.md](ADMIN_TOOLS.md)** - Admin tools and user management
+- **[TESTING.md](TESTING.md)** - Comprehensive testing documentation and procedures
 
 ---
 

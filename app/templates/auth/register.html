@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Bibliotheca{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                {% if current_user.is_authenticated and current_user.is_admin %}
+                    <h3 class="text-center">
+                        <i class="bi bi-person-plus-fill me-2"></i>Create New User
+                    </h3>
+                    <p class="text-center text-muted mb-0">Creating a new user as administrator</p>
+                {% else %}
+                    <h3 class="text-center">Create Account</h3>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.username.label(class="form-label") }}
+                        {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else "")) }}
+                        {% if form.username.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.username.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.email.label(class="form-label") }}
+                        {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
+                        {% if form.email.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.email.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.password.label(class="form-label") }}
+                        {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else "")) }}
+                        {% if form.password.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.password.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.password2.label(class="form-label") }}
+                        {{ form.password2(class="form-control" + (" is-invalid" if form.password2.errors else "")) }}
+                        {% if form.password2.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.password2.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-success") }}
+                    </div>
+                </form>
+                
+                <div class="text-center mt-3">
+                    {% if current_user.is_authenticated and current_user.is_admin %}
+                        <p>
+                            <a href="{{ url_for('admin.users') }}" class="btn btn-outline-secondary">
+                                ← Back to User Management
+                            </a>
+                        </p>
+                    {% else %}
+                        <p>
+                            Already have an account? 
+                            <a href="{{ url_for('auth.login') }}">Sign in here</a>
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

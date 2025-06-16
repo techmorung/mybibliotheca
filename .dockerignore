@@ -1,0 +1,48 @@
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+MULTI_USER_PROJECT_PLAN.md
+
+# Python cache
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+.env
+.venv
+env/
+venv/
+
+# Testing
+.pytest_cache
+.coverage
+htmlcov/
+.tox/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local data
+data/
+data-test/
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.bak

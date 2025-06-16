@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  bibliotheca:
+    build: .
+    ports:
+      - "5054:5054"
+    volumes:
+      - ./data:/app/data
+    environment:
+      # Security (change these in production!)
+      - SECRET_KEY=dev-secret-key-change-in-production
+      - WTF_CSRF_ENABLED=true
+      
+      # Database
+      - DATABASE_URL=sqlite:////app/data/books.db
+      
+      # Admin user settings (change these!)
+      # Use: docker exec -it bibliotheca python3 admin_tools.py reset-admin-password
+      - ADMIN_EMAIL=admin@bibliotheca.local
+      - ADMIN_USERNAME=admin
+      - ADMIN_PASSWORD=changeme123
+      
+      # Application settings
+      - TIMEZONE=UTC
+      - READING_STREAK_OFFSET=0
+      - FLASK_DEBUG=true
+      
+      # Gunicorn settings
+      - WORKERS=2
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5054/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Test service for running automated tests
+  bibliotheca-test:
+    build: .
+    volumes:
+      - ./data-test:/app/data
+      - .:/app/test-source:ro
+    environment:
+      - SECRET_KEY=test-secret-key
+      - DATABASE_URL=sqlite:////app/data/test_books.db
+      - ADMIN_EMAIL=test@bibliotheca.local
+      - ADMIN_USERNAME=testadmin
+      - ADMIN_PASSWORD=testpass123
+      - FLASK_DEBUG=true
+    command: python3 -m pytest tests/ -v
+    profiles:
+      - test
+
+volumes:
+  bibliotheca_data:
+    driver: local
