@@ -16,6 +16,9 @@
         <div class="card-body">
             <h3 class="card-title">Bulk Import Books</h3>
             <p class="card-text">Upload a CSV file containing UPCs/ISBNs in a single column to bulk import books.</p>
+            <div class="alert alert-info">
+                <strong>📝 Background Processing:</strong> Bulk imports now run in the background! You'll be redirected to a progress page where you can monitor the import status in real-time. Large imports may take time due to rate limiting, but you can navigate away and return later to check progress.
+            </div>
             <form method="POST" enctype="multipart/form-data">
                 <div class="mb-3">
                     <label for="csv_file" class="form-label">Upload CSV File</label>

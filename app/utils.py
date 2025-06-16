@@ -7,12 +7,48 @@ from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 import requests
 import os
+import time
 from flask import current_app
+
+# Rate limiting configuration
+# Adjust these values based on API provider limits and your needs
+API_RATE_LIMIT_DELAY = 0.5  # seconds between API calls (0.5 second for faster bulk imports)
+MAX_RETRIES = 3             # maximum number of retry attempts
+RETRY_DELAY = 2.0           # base seconds to wait before retrying (exponential backoff)
+
+# Note: OpenLibrary has no official rate limits but recommends being respectful
+# Google Books API has a limit of 1000 requests per day for free tier
+# Increase delays if you experience frequent API throttling
+
+def rate_limited_request(url, timeout=5, max_retries=MAX_RETRIES, params=None):
+    """
+    Make a rate-limited HTTP request with retry logic
+    """
+    for attempt in range(max_retries):
+        try:
+            # Add delay to respect rate limits
+            time.sleep(API_RATE_LIMIT_DELAY)
+            
+            response = requests.get(url, timeout=timeout, params=params)
+            response.raise_for_status()  # Raise an exception for bad status codes
+            return response
+        except requests.exceptions.RequestException as e:
+            current_app.logger.warning(f"API request attempt {attempt + 1} failed for {url}: {e}")
+            if attempt < max_retries - 1:
+                time.sleep(RETRY_DELAY * (attempt + 1))  # Exponential backoff
+            else:
+                current_app.logger.error(f"API request failed after {max_retries} attempts for {url}")
+                raise
+    return None
 
 def fetch_book_data(isbn):
     url = f"https://openlibrary.org/api/books?bibkeys=ISBN:{isbn}&format=json&jscmd=data"
-    response = requests.get(url)
-    data = response.json()
+    try:
+        response = rate_limited_request(url)
+        data = response.json()
+    except Exception as e:
+        current_app.logger.error(f"Failed to fetch book data for ISBN {isbn}: {e}")
+        return None
     book_key = f"ISBN:{isbn}"
     if book_key in data:
         book = data[book_key]
@@ -47,8 +83,8 @@ def fetch_book_data(isbn):
 def get_google_books_cover(isbn, fetch_title_author=False):
     url = f"https://www.googleapis.com/books/v1/volumes?q=isbn:{isbn}"
     try:
-        resp = requests.get(url, timeout=5)
-        data = resp.json()
+        response = rate_limited_request(url, timeout=5)
+        data = response.json()
         items = data.get("items")
         if items:
             volume_info = items[0]["volumeInfo"]
@@ -187,8 +223,8 @@ def generate_month_review_image(books, month, year):
         cover_url = getattr(book, 'cover_url', None)
         try:
             if cover_url:
-                r = requests.get(cover_url, timeout=10)
-                cover = Image.open(BytesIO(r.content)).convert("RGBA")
+                response = rate_limited_request(cover_url, timeout=10)
+                cover = Image.open(BytesIO(response.content)).convert("RGBA")
                 cover = cover.resize((cover_w, cover_h))
             else:
                 raise Exception("No cover")
@@ -197,3 +233,144 @@ def generate_month_review_image(books, month, year):
         bg.paste(cover, (x, y), cover if cover.mode == 'RGBA' else None)
 
     return bg.convert('RGB')
+
+import threading
+import uuid
+from .models import Task, Book, db
+import csv
+import io
+
+# Background task management
+active_tasks = {}
+
+def run_bulk_import_task(app, task_id, csv_content, file_format='isbn_only'):
+    """Background task function for bulk import"""
+    
+    with app.app_context():
+        task = Task.query.get(task_id)
+        if not task:
+            return
+        
+        try:
+            task.set_running()
+            
+            # Parse CSV content
+            csv_file = io.StringIO(csv_content)
+            reader = csv.reader(csv_file)
+            
+            # Skip header if present
+            first_row = next(reader, None)
+            if not first_row:
+                task.set_failed("Empty CSV file")
+                return
+            
+            # Check if first row is header (contains non-ISBN data)
+            if file_format == 'isbn_only' and not first_row[0].replace('-', '').isdigit():
+                # Skip header row
+                pass
+            else:
+                # Reset reader to include first row
+                csv_file.seek(0)
+                reader = csv.reader(csv_file)
+            
+            # Count total items first
+            all_rows = list(reader)
+            task.total_items = len(all_rows)
+            db.session.commit()
+            
+            success_count = 0
+            error_count = 0
+            
+            for i, row in enumerate(all_rows, 1):
+                if not row or not row[0].strip():
+                    continue
+                
+                isbn = row[0].strip().replace('-', '')
+                task.update_progress(i, f"Processing ISBN: {isbn}")
+                
+                try:
+                    # Check if book already exists
+                    existing_book = Book.get_book_by_isbn(isbn)
+                    if existing_book:
+                        current_app.logger.info(f"Book with ISBN {isbn} already exists, skipping")
+                        continue
+                    
+                    # Try to fetch book data
+                    book_data = fetch_book_data(isbn)
+                    if not book_data or not book_data.get('title'):
+                        # Fallback to Google Books
+                        google_data = get_google_books_cover(isbn, fetch_title_author=True)
+                        if google_data and google_data.get('title'):
+                            book_data = google_data
+                    
+                    if book_data and book_data.get('title') and book_data.get('author'):
+                        # Create new book
+                        new_book = Book(
+                            isbn=isbn,
+                            title=book_data.get('title', 'Unknown Title'),
+                            author=book_data.get('author', 'Unknown Author'),
+                            cover_url=book_data.get('cover'),
+                            description=book_data.get('description'),
+                            published_date=book_data.get('published_date'),
+                            page_count=book_data.get('page_count'),
+                            categories=book_data.get('categories'),
+                            publisher=book_data.get('publisher'),
+                            language=book_data.get('language'),
+                            average_rating=book_data.get('average_rating'),
+                            rating_count=book_data.get('rating_count'),
+                            want_to_read=True
+                        )
+                        new_book.save()
+                        success_count += 1
+                        app.logger.info(f"Successfully imported: {book_data['title']}")
+                    else:
+                        error_count += 1
+                        app.logger.warning(f"Could not find book data for ISBN: {isbn}")
+                
+                except Exception as e:
+                    error_count += 1
+                    app.logger.error(f"Error importing ISBN {isbn}: {e}")
+                
+                # Update progress
+                task.update_progress(i, success_count=success_count, error_count=error_count)
+            
+            # Task completed
+            result = {
+                'total_processed': len(all_rows),
+                'successful_imports': success_count,
+                'errors': error_count,
+                'message': f"Import completed: {success_count} books imported, {error_count} errors"
+            }
+            task.set_completed(result)
+            
+        except Exception as e:
+            app.logger.error(f"Bulk import task failed: {e}")
+            task.set_failed(str(e))
+        finally:
+            # Clean up
+            if task_id in active_tasks:
+                del active_tasks[task_id]
+
+def start_bulk_import_task(csv_content, file_format='isbn_only'):
+    """Start a background bulk import task"""
+    from flask import current_app
+    
+    task_id = str(uuid.uuid4())
+    task = Task(
+        id=task_id,
+        name="Bulk Import",
+        description="Importing books from CSV file"
+    )
+    db.session.add(task)
+    db.session.commit()
+    
+    # Start background thread
+    thread = threading.Thread(
+        target=run_bulk_import_task,
+        args=(current_app._get_current_object(), task_id, csv_content, file_format)
+    )
+    thread.daemon = True
+    thread.start()
+    
+    active_tasks[task_id] = thread
+    return task_id

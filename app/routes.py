@@ -1,6 +1,6 @@
 from flask import Blueprint, current_app, render_template, request, redirect, url_for, jsonify, flash, send_file
 from .models import Book, db, ReadingLog
-from .utils import fetch_book_data, get_reading_streak, get_google_books_cover, generate_month_review_image
+from .utils import fetch_book_data, get_reading_streak, get_google_books_cover, generate_month_review_image, rate_limited_request
 from datetime import datetime, date
 import secrets
 import requests
@@ -270,12 +270,18 @@ def search_books():
     if request.method == 'POST':
         query = request.form.get('query', '')
         if query:
-            # Google Books API search
-            resp = requests.get(
-                'https://www.googleapis.com/books/v1/volumes',
-                params={'q': query, 'maxResults': 10}
-            )
-            data = resp.json()
+            # Google Books API search with rate limiting
+            try:
+                response = rate_limited_request(
+                    'https://www.googleapis.com/books/v1/volumes',
+                    timeout=5,
+                    params={'q': query, 'maxResults': 10}
+                )
+                data = response.json()
+            except Exception as e:
+                current_app.logger.error(f"Google Books API search failed: {e}")
+                flash('Search failed. Please try again later.', 'danger')
+                return render_template('search_books.html', results=results, query=query)
             for item in data.get('items', []):
                 volume_info = item.get('volumeInfo', {})
                 image = volume_info.get('imageLinks', {}).get('thumbnail')
@@ -576,97 +582,43 @@ def bulk_import():
             return redirect(request.url)
         if file and file.filename.endswith('.csv'):
             try:
-                # Read CSV file
-                csv_file = csv.reader(file.stream.read().decode("utf-8").splitlines())
-                default_status = request.form.get('default_status', 'library_only')
-                imported_count = 0
-                failed_count = 0
-                failed_isbns = []
-
-                for row in csv_file:
-                    if not row:  # Skip empty rows
-                        continue
-                    isbn = row[0].strip()
-                    if not isbn: # Skip rows with empty ISBN
-                        continue
-
-                    # Check if book already exists
-                    if Book.get_book_by_isbn(isbn):
-                        failed_count += 1
-                        failed_isbns.append(f"{isbn} (already exists)")
-                        continue
-
-                    book_data = fetch_book_data(isbn)
-                    if not book_data:
-                        google_book_data = get_google_books_cover(isbn, fetch_title_author=True)
-                        if google_book_data and google_book_data.get('title') and google_book_data.get('author'):
-                            book_data = google_book_data
-                        else:
-                            failed_count += 1
-                            failed_isbns.append(f"{isbn} (data not found)")
-                            continue
-                    else:
-                        # Enhance OpenLibrary data with Google Books data
-                        google_data = get_google_books_cover(isbn, fetch_title_author=True)
-                        if google_data:
-                            for key, value in google_data.items():
-                                if value and not book_data.get(key):
-                                    book_data[key] = value
-                    
-                    title = book_data.get('title')
-                    author = book_data.get('author')
-                    cover_url = book_data.get('cover') or get_google_books_cover(isbn)
-                    description = book_data.get('description')
-                    published_date = book_data.get('published_date')
-                    page_count = book_data.get('page_count')
-                    categories = book_data.get('categories')
-                    publisher = book_data.get('publisher')
-                    language = book_data.get('language')
-                    average_rating = book_data.get('average_rating')
-                    rating_count = book_data.get('rating_count')
-
-
-                    if not title or not author:
-                        failed_count += 1
-                        failed_isbns.append(f"{isbn} (missing title/author)")
-                        continue
-
-                    want_to_read = default_status == 'want_to_read'
-                    library_only = default_status == 'library_only'
-                    start_date = date.today() if default_status == 'reading' else None
-
-                    new_book = Book(
-                        title=title,
-                        author=author,
-                        isbn=isbn,
-                        cover_url=cover_url,
-                        want_to_read=want_to_read,
-                        library_only=library_only,
-                        start_date=start_date,
-                        description=description,
-                        published_date=published_date,
-                        page_count=page_count,
-                        categories=categories,
-                        publisher=publisher,
-                        language=language,
-                        average_rating=average_rating,
-                        rating_count=rating_count
-                    )
-                    new_book.save()
-                    imported_count += 1
-
-                if imported_count > 0:
-                    flash(f'Successfully imported {imported_count} books.', 'success')
-                if failed_count > 0:
-                    flash(f'Failed to import {failed_count} books: {", ".join(failed_isbns)}', 'danger')
-                return redirect(url_for('main.index'))
+                # Read CSV content
+                csv_content = file.stream.read().decode("utf-8")
+                
+                # Start background task
+                from .utils import start_bulk_import_task
+                task_id = start_bulk_import_task(csv_content, 'isbn_only')
+                
+                flash('Bulk import started! You can check the progress below.', 'success')
+                return redirect(url_for('main.task_status', task_id=task_id))
 
             except Exception as e:
-                current_app.logger.error(f"Error during bulk import: {e}")
-                flash('An error occurred during the bulk import process. Please try again later.', 'danger')
+                current_app.logger.error(f"Error starting bulk import: {e}")
+                flash('An error occurred starting the bulk import. Please try again.', 'danger')
                 return redirect(request.url)
         else:
             flash('Invalid file type. Please upload a CSV file.', 'danger')
             return redirect(request.url)
 
     return render_template('bulk_import.html')
+
+@bp.route('/task/<task_id>')
+def task_status(task_id):
+    """Display task status page"""
+    from .models import Task
+    task = Task.query.get_or_404(task_id)
+    return render_template('task_status.html', task=task)
+
+@bp.route('/api/task/<task_id>')
+def api_task_status(task_id):
+    """API endpoint for task status (for AJAX polling)"""
+    from .models import Task
+    task = Task.query.get_or_404(task_id)
+    return jsonify(task.to_dict())
+
+@bp.route('/tasks')
+def list_tasks():
+    """List all tasks"""
+    from .models import Task
+    tasks = Task.query.order_by(Task.created_at.desc()).limit(20).all()
+    return render_template('task_list.html', tasks=tasks)
