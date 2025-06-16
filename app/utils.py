@@ -118,7 +118,7 @@ def get_reading_streak(timezone):
         if (dates[i] - dates[i - 1]).days == 1:
             streak += 1
         else:
-            streak = 0  # Reset streak if a day is missed
+            break  # Stop counting if a day is missed
 
     return streak
 
