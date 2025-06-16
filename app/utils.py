@@ -99,24 +99,25 @@ def get_reading_streak(timezone):
         .all()
     )
     dates = [d[0] for d in dates]
+
+    streak_offset = current_app.config.get('READING_STREAK_OFFSET', 0)
     if not dates:
-        return 0
+        return streak_offset
 
     # Use the configured timezone for "today"
     now_ca = datetime.now(timezone)
     today = now_ca.date()
 
     streak = 0
-    for i, d in enumerate(dates):
-        expected = today - timedelta(days=i)
-        if d == expected:
+    streak = 1  # Start with the first day logged
+    for i in range(1, len(dates)):
+        # Check if the current date is exactly one day after the previous date
+        if (dates[i] - dates[i - 1]).days == 1:
             streak += 1
         else:
-            break
+            streak = 0  # Reset streak if a day is missed
 
-    # Apply the streak offset from the configuration
-    streak_offset = current_app.config.get('READING_STREAK_OFFSET', 0)
-    return streak + streak_offset
+    return streak
 
 def generate_month_review_image(books, month, year):
     import calendar
