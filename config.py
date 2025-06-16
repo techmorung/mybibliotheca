@@ -14,4 +14,4 @@ class Config:
     TIMEZONE = os.environ.get('TIMEZONE') or 'UTC'
 
     # New: Reading streak offset
-    READING_STREAK_OFFSET = int(os.environ.get('READING_STREAK_OFFSET', 500))
+    READING_STREAK_OFFSET = int(os.environ.get('READING_STREAK_OFFSET', 0))
