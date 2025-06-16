@@ -108,6 +108,9 @@ def get_reading_streak(timezone):
     now_ca = datetime.now(timezone)
     today = now_ca.date()
 
+    # Ensure the most recent date matches today
+    if dates[0] != today:
+        return streak_offset
     streak = 0
     streak = 1  # Start with the first day logged
     for i in range(1, len(dates)):
