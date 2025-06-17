@@ -120,9 +120,9 @@
       <div class="book-card">
         {% if book.cover_url %}
           <img src="{{ book.cover_url }}" alt="cover" class="book-cover-shelf"
-               onerror="this.onerror=null;this.src='{{ url_for('static', filename='bookshelf.png') }}';">
+               onerror="this.onerror=null;this.src='{{ url_for('static', filename='book_cover.png') }}';">
         {% else %}
-          <img src="{{ url_for('static', filename='bookshelf.png') }}" alt="cover" class="book-cover-shelf">
+          <img src="{{ url_for('static', filename='book_cover.png') }}" alt="cover" class="book-cover-shelf">
         {% endif %}
         <div class="book-title">
           <a href="{{ url_for('main.view_book', uid=book.uid) }}">{{ book.title }}</a>
