@@ -68,7 +68,7 @@
 
 <!-- Filter Section -->
 <div class="filter-section">
-  <form method="GET" class="row g-3">
+  <form method="GET" class="row g-3 w-100">
     <div class="col-md-3">
       <label for="search" class="form-label">Search</label>
       <input type="text" class="form-control" id="search" name="search" 
@@ -107,13 +107,10 @@
         {% endfor %}
       </select>
     </div>
-    <div class="col-md-1">
-      <label>&nbsp;</label>
-      <button type="submit" class="btn btn-primary d-block">Filter</button>
-    </div>
   </form>
-  <div class="mt-2">
-    <a href="{{ url_for('main.library') }}" class="btn btn-secondary btn-sm">Clear Filters</a>
+  <div class="mt-2 text-center w-100">
+    <button type="submit" class="btn btn-primary btn-sm me-2">Filter</button> <!-- Blue Filter Button -->
+    <a href="{{ url_for('main.library') }}" class="btn btn-secondary btn-sm">Clear Filters</a> <!-- Gray Clear Filters Button -->
     <span class="ms-3 text-muted">Showing {{ books|length }} book(s)</span>
   </div>
 </div>
