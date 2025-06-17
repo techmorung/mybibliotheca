@@ -1,7 +1,7 @@
 # 📚 Bibliotheca
 
 **Bibliotheca** is a self-hosted personal library and reading tracker web app built with Flask. It lets you log, organize, and visualize your reading journey. Add books by ISBN, track reading progress, log daily reading, and generate monthly wrap-up images of your finished titles.
-
+[**Join us on Discord!**](https://discord.gg/Hc8C5eRm7Q)
 ---
 
 ## ✨ Features
@@ -165,7 +165,6 @@ bibliotheca/
 Licensed under the [MIT License](LICENSE).
 
 ---
-## Join us on Discord! https://discord.gg/Hc8C5eRm7Q
 
 ## ❤️ Contribute
 
