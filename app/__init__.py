@@ -13,12 +13,21 @@ def create_app():
     # Optional: Automatically create tables if DB is empty or handle schema migration
     with app.app_context():
         inspector = inspect(db.engine)
-        if not inspector.get_table_names():
+        table_names = inspector.get_table_names()
+        
+        if not table_names:
             print("📚 Creating database schema...")
             db.create_all()
         else:
             print("✅ Tables already present.")
-            # Check if new columns exist, if not, add them
+            
+            # Check if task table exists
+            if 'task' not in table_names:
+                print("🔄 Adding task table for background jobs...")
+                db.create_all()  # This will create any missing tables
+                print("✅ Task table created.")
+            
+            # Check if new columns exist in book table, if not, add them
             try:
                 columns = [column['name'] for column in inspector.get_columns('book')]
                 new_columns = ['description', 'published_date', 'page_count', 'categories', 'publisher', 'language', 'average_rating', 'rating_count']
