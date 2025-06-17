@@ -62,7 +62,7 @@ class Config:
     # Admin settings
     ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'admin@bibliotheca.local')
     ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
-    ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'changeme123')
+    ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'G7#xP@9zL!qR2')
     
     # Debug settings (disabled by default for security)
     DEBUG_MODE = os.environ.get('BIBLIOTHECA_DEBUG', 'false').lower() in ['true', 'on', '1']

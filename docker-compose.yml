@@ -19,7 +19,7 @@ services:
       # Use: docker exec -it bibliotheca python3 admin_tools.py reset-admin-password
       - ADMIN_EMAIL=admin@bibliotheca.local
       - ADMIN_USERNAME=admin
-      - ADMIN_PASSWORD=changeme123
+      - ADMIN_PASSWORD=G7#xP@9zL!qR2
       
       # Application settings
       - TIMEZONE=UTC

@@ -117,7 +117,9 @@ def create_default_admin_if_needed():
         if User.query.count() == 0:
             admin_username = os.environ.get('ADMIN_USERNAME', 'admin')
             admin_email = os.environ.get('ADMIN_EMAIL', 'admin@bibliotheca.local')
-            admin_password = os.environ.get('ADMIN_PASSWORD', 'changeme123')
+            admin_password = os.environ.get('ADMIN_PASSWORD', 'G7#xP@9zL!qR2')
+            
+            print(f"Creating default admin with username: {admin_username}, email: {admin_email}")
             
             admin_user = User(
                 username=admin_username,
@@ -125,8 +127,13 @@ def create_default_admin_if_needed():
                 is_admin=True,
                 created_at=datetime.now()
             )
-            admin_user.set_password(admin_password)
             
+            # Debug password validation
+            if not User.is_password_strong(admin_password):
+                print("Password validation failed for default admin password.")
+                raise ValueError("Default admin password does not meet security requirements.")
+            
+            admin_user.set_password(admin_password)
             db.session.add(admin_user)
             db.session.commit()
             

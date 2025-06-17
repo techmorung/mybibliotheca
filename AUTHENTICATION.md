@@ -21,7 +21,7 @@ When you first run Bibliotheca V2.0, an admin user is automatically created duri
 **Default Admin Credentials:**
 - Username: `admin` (or from `ADMIN_USERNAME` env var)
 - Email: `admin@bibliotheca.local` (or from `ADMIN_EMAIL` env var)  
-- Password: `changeme123` (or from `ADMIN_PASSWORD` env var)
+- Password: `P@ssw0rd!Secure123` (or from `ADMIN_PASSWORD` env var)
 
 ⚠️ **IMPORTANT**: Change the default admin password immediately after first login!
 
@@ -37,7 +37,7 @@ SECURITY_PASSWORD_SALT=your-password-salt
 # Admin user setup (for initial migration)
 ADMIN_EMAIL=admin@bibliotheca.local
 ADMIN_USERNAME=admin
-ADMIN_PASSWORD=changeme123
+ADMIN_PASSWORD=P@ssw0rd!Secure123
 
 # Optional: Email configuration (future feature)
 MAIL_SERVER=smtp.gmail.com

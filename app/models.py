@@ -61,29 +61,33 @@ class User(UserMixin, db.Model):
         - Not in common password blacklist
         """
         if len(password) < 12:
+            print("Password validation failed: Too short")
             return False
         
         if not re.search(r'[A-Z]', password):
+            print("Password validation failed: Missing uppercase letter")
             return False
         
         if not re.search(r'[a-z]', password):
+            print("Password validation failed: Missing lowercase letter")
             return False
         
         if not re.search(r'\d', password):
+            print("Password validation failed: Missing number")
             return False
         
         if not re.search(r'[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?]', password):
+            print("Password validation failed: Missing special character")
             return False
         
         # Common password blacklist
         common_passwords = {
             'password123', 'password1234', 'admin123', 'administrator',
             'qwerty123', 'welcome123', 'letmein123', 'password!',
-            'password1!', 'admin1234', 'password12', '123456789',
-            'qwertyuiop', 'asdfghjkl', 'zxcvbnm123'
         }
         
         if password.lower() in common_passwords:
+            print("Password validation failed: Password is in the common password blacklist")
             return False
         
         return True

@@ -68,7 +68,7 @@ ENV WTF_CSRF_ENABLED=True
 # The default password will be force-changed on first login
 ENV ADMIN_EMAIL=admin@bibliotheca.local
 ENV ADMIN_USERNAME=admin
-ENV ADMIN_PASSWORD=changeme123
+ENV ADMIN_PASSWORD=G7#xP@9zL!qR2
 
 # Flask environment (using FLASK_DEBUG instead of deprecated FLASK_ENV)
 ENV FLASK_DEBUG=false
