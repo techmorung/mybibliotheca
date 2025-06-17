@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, session
 from flask_login import login_user, logout_user, current_user, login_required
 from .models import User, PasswordResetToken, db
 from .forms import (LoginForm, RegistrationForm, RequestPasswordResetForm, 
@@ -62,6 +62,10 @@ def login():
 def logout():
     username = current_user.username
     logout_user()
+    
+    # Clear the session to ensure CSRF tokens are regenerated
+    session.clear()
+    
     flash(f'Goodbye, {username}!', 'info')
     return redirect(url_for('main.index'))
 
