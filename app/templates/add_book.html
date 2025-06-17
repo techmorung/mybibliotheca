@@ -3,6 +3,36 @@
 {% block content %}
 <h1>Add a New Book</h1>
 <form method="post">
+<<<<<<< main
+  <div class="mb-3">
+    <button type="button" class="btn btn-secondary w-100" onclick="startScanner()">Scan Barcode</button>
+  </div>
+  <div class="mb-3">
+    <label for="isbn" class="form-label">ISBN (type or scan)</label>
+    <!-- Use type="tel" and pattern="\d*" for mobile keypad -->
+    <input id="isbn" name="isbn" class="form-control" value="{{ request.form.isbn or '' }}" type="tel" pattern="\d*" inputmode="numeric">
+  </div>
+  <div id="scanner" class="mb-3" style="width:100%; max-width:500px; height:auto; min-height:200px; display:none;"></div>
+  <div class="mb-3">
+    <button name="fetch" value="1" type="submit" class="btn btn-info w-100">Fetch Book Data from ISBN</button>
+  </div>
+  <div class="mb-3">
+    <label for="title" class="form-label">Title</label>
+    <input id="title" name="title" class="form-control" value="{{ book_data.title if book_data else request.form.title or '' }}">
+  </div>
+  <div class="mb-3">
+    <label for="author" class="form-label">Author</label>
+    <input id="author" name="author" class="form-control" value="{{ book_data.author if book_data else request.form.author or '' }}">
+  </div>
+  <div class="mb-3">
+    <label for="start_date" class="form-label">Start Date</label>
+    <input id="start_date" name="start_date" class="form-control" type="date" value="{{ request.form.start_date or '' }}">
+  </div>
+  <div class="mb-3">
+    <label for="finish_date" class="form-label">Finish Date</label>
+    <input id="finish_date" name="finish_date" class="form-control" type="date" value="{{ request.form.finish_date or '' }}">
+  </div>
+=======
   <button type="button" class="btn btn-secondary" onclick="startScanner()">Scan Barcode</button>
 
   <!-- ISBN input -->
@@ -27,9 +57,31 @@
   Start Date: <input name="start_date" type="date"><br>
   Finish Date: <input name="finish_date" type="date"><br>
 
+>>>>>>> main
   {% if book_data and book_data.cover %}
-    <img src="{{ book_data.cover }}" alt="Book Cover" style="max-height:200px;"><br>
+  <div class="mb-3 text-center">
+    <img src="{{ book_data.cover }}" alt="Book Cover" class="img-fluid rounded" style="max-height:200px;">
+  </div>
   {% endif %}
+<<<<<<< main
+  <div class="form-check mb-3">
+    <input class="form-check-input" type="checkbox" name="want_to_read" id="want_to_read" {% if request.form.want_to_read %}checked{% endif %}>
+    <label class="form-check-label" for="want_to_read">
+      Want to Read
+    </label>
+  </div>
+  <div class="form-check mb-3">
+    <input class="form-check-input" type="checkbox" name="library_only" id="library_only" {% if request.form.library_only %}checked{% endif %}>
+    <label class="form-check-label" for="library_only">
+      Add to Library Only (not for reading)
+    </label>
+  </div>
+  <div class="d-grid gap-2">
+    <input type="submit" name="add" value="Add Book" class="btn btn-primary">
+    <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">Back to list</a>
+  </div>
+</form>
+=======
 
   <label>
     <input type="checkbox" name="want_to_read" {% if request.form.want_to_read %}checked{% endif %}>
@@ -45,6 +97,7 @@
 </form>
 
 <a href="{{ url_for('main.index') }}">Back to list</a>
+>>>>>>> main
 
 <!-- QuaggaJS -->
 <script src="https://unpkg.com/@ericblade/quagga2@1.2.6/dist/quagga.min.js"></script>
