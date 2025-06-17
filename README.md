@@ -91,7 +91,7 @@ docker compose up -d
 | `ADMIN_USERNAME`      | Default admin username                     | `admin`                   |
 | `ADMIN_PASSWORD`      | Default admin password                     | `changeme123`             |
 | `TIMEZONE`            | Sets the app's timezone                    | `America/Chicago`         |
-| `READING_STREAK_OFFSET` | Adjusts reading day streak | `160` (160 days + new days logged)    |
+| `READING_STREAK_OFFSET` | Adjusts reading day streak | `0` (starts from 0, add offset if migrating)    |
 | `WORKERS`             | Number of Gunicorn worker processes        | `6`                      |
 
 ---
@@ -173,10 +173,40 @@ Existing single-user installations are **automatically migrated** to multi-user:
    pip install -r requirements.txt
    ```
 
-4. **Run the app**
+4. **Setup data directory** (ensures parity with Docker environment)
 
+   **On Linux/macOS:**
+   ```bash
+   python3 setup_data_dir.py
+   ```
+
+   **On Windows:**
+   ```cmd
+   # Option 1: Use Python script (recommended)
+   python setup_data_dir.py
+   
+   # Option 2: Use Windows batch script
+   setup_data_dir.bat
+   ```
+
+   This step creates the `data` directory and database file with proper permissions for your platform.
+
+   This step creates the `data` directory and database file with proper permissions for your platform.
+
+5. **Run the app**
+
+   **On Linux/macOS:**
    ```bash
    gunicorn -w NUMBER_OF_WORKERS -b 0.0.0.0:5054 run:app
+   ```
+
+   **On Windows:**
+   ```cmd
+   # If gunicorn is installed globally
+   gunicorn -w NUMBER_OF_WORKERS -b 0.0.0.0:5054 run:app
+   
+   # Or use Python module (more reliable on Windows)
+   python -m gunicorn -w NUMBER_OF_WORKERS -b 0.0.0.0:5054 run:app
    ```
 
    Visit: [http://127.0.0.1:5054](http://127.0.0.1:5054)

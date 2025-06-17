@@ -152,7 +152,9 @@ def create_app():
 
     # Handle database migrations with backup
     with app.app_context():
-        db_path = app.config.get('DATABASE_PATH', 'data/books.db')
+        # Get database path from config (directory already ensured by config.py)
+        db_path = app.config.get('DATABASE_PATH')
+        
         inspector = inspect(db.engine)
         
         # Check if migrations are needed before creating backup

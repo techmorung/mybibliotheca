@@ -1,7 +1,31 @@
 import os
 import secrets
+import platform
 
 basedir = os.path.abspath(os.path.dirname(__file__))
+
+def ensure_data_directory():
+    """Ensure data directory exists with proper permissions for both Docker and standalone (cross-platform)"""
+    data_dir = os.path.join(basedir, 'data')
+    
+    # Create directory if it doesn't exist
+    os.makedirs(data_dir, exist_ok=True)
+    
+    # Set permissions for standalone (Docker handles this in entrypoint)
+    # Only set Unix permissions on non-Windows systems
+    if not os.environ.get('DATABASE_URL'):  # Not in Docker environment
+        if platform.system() != "Windows":
+            try:
+                # Set directory permissions (755 = rwxr-xr-x)
+                os.chmod(data_dir, 0o755)
+            except (OSError, PermissionError):
+                # Ignore permission errors (common on some systems)
+                pass
+    
+    return data_dir
+
+# Initialize data directory
+data_dir = ensure_data_directory()
 
 class Config:
     # Security
@@ -9,18 +33,17 @@ class Config:
     WTF_CSRF_ENABLED = True
     WTF_CSRF_TIME_LIMIT = 3600  # 1 hour
 
-    # Database
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        f"sqlite:///{os.path.join(basedir, 'data', 'books.db')}"
+    # Database - unified path handling for Docker and standalone
+    DATABASE_PATH = os.path.join(data_dir, 'books.db')
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or f"sqlite:///{DATABASE_PATH}"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    DATABASE_PATH = os.path.join(basedir, 'data', 'books.db')
 
     # External APIs
     ISBN_API_KEY = os.environ.get('ISBN_API_KEY') or 'your_isbn_api_key'
     
     # Application settings
     TIMEZONE = os.environ.get('TIMEZONE') or 'UTC'
-    READING_STREAK_OFFSET = int(os.environ.get('READING_STREAK_OFFSET', 500))
+    READING_STREAK_OFFSET = int(os.environ.get('READING_STREAK_OFFSET', 0))
     
     # Authentication settings
     REMEMBER_COOKIE_DURATION = 86400 * 7  # 7 days

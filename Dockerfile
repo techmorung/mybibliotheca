@@ -53,8 +53,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy all source code
 COPY . .
 
-# Create directory for SQLite database (used in volume)
-RUN mkdir -p /app/data
+# Create directory for SQLite database with proper permissions
+RUN mkdir -p /app/data && \
+    chmod 755 /app/data && \
+    touch /app/data/books.db && \
+    chmod 664 /app/data/books.db
 
 # Set environment variables for multi-user authentication
 ENV DATABASE_URL=sqlite:////app/data/books.db
