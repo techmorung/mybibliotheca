@@ -3,6 +3,7 @@
 {% block content %}
 <h1>Add a New Book</h1>
 <form method="post">
+<<<<<<< main
   <div class="mb-3">
     <button type="button" class="btn btn-secondary w-100" onclick="startScanner()">Scan Barcode</button>
   </div>
@@ -31,11 +32,38 @@
     <label for="finish_date" class="form-label">Finish Date</label>
     <input id="finish_date" name="finish_date" class="form-control" type="date" value="{{ request.form.finish_date or '' }}">
   </div>
+=======
+  <button type="button" class="btn btn-secondary" onclick="startScanner()">Scan Barcode</button>
+
+  <!-- ISBN input -->
+  <input id="isbn" name="isbn" class="form-control" value="{{ request.form.isbn or '' }}" type="tel" pattern="\d*" inputmode="numeric">
+
+  <!-- Constrained scanner box -->
+  <div id="scanner" style="
+    width: 300px;
+    height: 200px;
+    display: none;
+    border: 2px solid #ccc;
+    margin: 1rem 0;
+    overflow: hidden;
+    position: relative;
+    background-color: #000;
+  "></div>
+
+  <!-- Fetch and book data inputs -->
+  <button name="fetch" value="1" type="submit">Fetch Book Data</button><br>
+  Title: <input id="title" name="title" value="{{ book_data.title if book_data else request.form.title or '' }}"><br>
+  Author: <input name="author" value="{{ book_data.author if book_data else request.form.author or '' }}"><br>
+  Start Date: <input name="start_date" type="date"><br>
+  Finish Date: <input name="finish_date" type="date"><br>
+
+>>>>>>> main
   {% if book_data and book_data.cover %}
   <div class="mb-3 text-center">
     <img src="{{ book_data.cover }}" alt="Book Cover" class="img-fluid rounded" style="max-height:200px;">
   </div>
   {% endif %}
+<<<<<<< main
   <div class="form-check mb-3">
     <input class="form-check-input" type="checkbox" name="want_to_read" id="want_to_read" {% if request.form.want_to_read %}checked{% endif %}>
     <label class="form-check-label" for="want_to_read">
@@ -53,7 +81,25 @@
     <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">Back to list</a>
   </div>
 </form>
+=======
 
+  <label>
+    <input type="checkbox" name="want_to_read" {% if request.form.want_to_read %}checked{% endif %}>
+    Want to Read
+  </label><br>
+
+  <label>
+    <input type="checkbox" name="library_only" {% if request.form.library_only %}checked{% endif %}>
+    Add to Library Only (not for reading)
+  </label><br>
+
+  <input type="submit" name="add" value="Add Book">
+</form>
+
+<a href="{{ url_for('main.index') }}">Back to list</a>
+>>>>>>> main
+
+<!-- QuaggaJS -->
 <script src="https://unpkg.com/@ericblade/quagga2@1.2.6/dist/quagga.min.js"></script>
 <script>
 let quaggaStarted = false;
@@ -89,7 +135,7 @@ function startScanner() {
     quaggaStarted = true;
   });
 
-  Quagga.offDetected(); // Remove previous handlers
+  Quagga.offDetected();
   Quagga.onDetected(function(result) {
     if (result && result.codeResult && result.codeResult.code) {
       const code = result.codeResult.code;

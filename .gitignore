@@ -197,3 +197,5 @@ cython_debug/
 
 # Local book database file
 books.db
+books.db-shm
+books.db-wal

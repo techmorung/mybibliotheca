@@ -69,8 +69,13 @@
 
 <!-- Filter Section -->
 <div class="filter-section">
+<<<<<<< main
   <form method="GET" class="row g-3">
     <div class="col-12 col-sm-6 col-lg-3">
+=======
+  <form method="GET" class="row g-3 w-100">
+    <div class="col-md-3">
+>>>>>>> main
       <label for="search" class="form-label">Search</label>
       <input type="text" class="form-control" id="search" name="search" 
              value="{{ current_search }}" placeholder="Title, author, description...">
@@ -108,18 +113,23 @@
         {% endfor %}
       </select>
     </div>
+<<<<<<< main
     <div class="col-12 col-lg-1 d-flex align-items-end">
       <button type="submit" class="btn btn-primary w-100 w-lg-auto">Filter</button>
     </div>
+=======
+>>>>>>> main
   </form>
-  <div class="mt-2">
-    <a href="{{ url_for('main.library') }}" class="btn btn-secondary btn-sm">Clear Filters</a>
+  <div class="mt-2 text-center w-100">
+    <button type="submit" class="btn btn-primary btn-sm me-2">Filter</button> <!-- Blue Filter Button -->
+    <a href="{{ url_for('main.library') }}" class="btn btn-secondary btn-sm">Clear Filters</a> <!-- Gray Clear Filters Button -->
     <span class="ms-3 text-muted">Showing {{ books|length }} book(s)</span>
   </div>
 </div>
 <div class="bookshelf-bg">
   <div class="bookshelf-row row">
     {% for book in books %}
+<<<<<<< main
       <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 mb-4">
         <div class="book-card">
           {% if book.cover_url %}
@@ -133,6 +143,35 @@
           </div>
           <div class="book-author">
             {{ book.author }}
+=======
+      <div class="book-card">
+        {% if book.cover_url %}
+          <img src="{{ book.cover_url }}" alt="cover" class="book-cover-shelf"
+               onerror="this.onerror=null;this.src='{{ url_for('static', filename='book_cover.png') }}';">
+        {% else %}
+          <img src="{{ url_for('static', filename='book_cover.png') }}" alt="cover" class="book-cover-shelf">
+        {% endif %}
+        <div class="book-title">
+          <a href="{{ url_for('main.view_book', uid=book.uid) }}">{{ book.title }}</a>
+        </div>
+        <div class="book-author">
+          {{ book.author }}
+        </div>
+        {% if book.published_date %}
+          <div style="font-size:0.8em; color:#666; margin-bottom:2px;">{{ book.published_date }}</div>
+        {% endif %}
+        {% if book.page_count %}
+          <div style="font-size:0.8em; color:#666; margin-bottom:2px;">{{ book.page_count }} pages</div>
+        {% endif %}
+        {% if book.publisher %}
+          <div style="font-size:0.8em; color:#666; margin-bottom:4px;">{{ book.publisher }}</div>
+        {% endif %}
+        {% if book.categories %}
+          <div style="font-size:0.75em; color:#888; margin-bottom:4px; text-align:center;">
+            {% for category in book.categories.split(',')[:2] %}
+              <span class="badge bg-light text-dark me-1">{{ category.strip() }}</span>
+            {% endfor %}
+>>>>>>> main
           </div>
           {% if book.categories %}
             <div style="font-size:0.75em; color:#888; margin-bottom:4px; text-align:center;">
