@@ -59,7 +59,7 @@ services:
     image: pickles4evaaaa/bibliotheca:latest
     container_name: bibliotheca
     ports:
-      - "5053:5054"
+      - "5054:5054"
     volumes:
       - bibliotheca_data:/app/data
     restart: unless-stopped
