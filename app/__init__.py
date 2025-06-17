@@ -3,11 +3,13 @@ import shutil
 from datetime import datetime
 from flask import Flask
 from flask_login import LoginManager
+from flask_wtf.csrf import CSRFProtect
 from sqlalchemy import inspect, text
 from .models import db, User
 from config import Config
 
 login_manager = LoginManager()
+csrf = CSRFProtect()
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -142,6 +144,7 @@ def create_default_admin_if_needed():
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
+    app.config['SECRET_KEY'] = 'your-secret-key'
 
     # Initialize extensions
     db.init_app(app)
@@ -149,6 +152,7 @@ def create_app():
     login_manager.login_view = 'auth.login'
     login_manager.login_message = 'Please log in to access this page.'
     login_manager.login_message_category = 'info'
+    csrf.init_app(app)
 
     # Handle database migrations with backup
     with app.app_context():
