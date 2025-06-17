@@ -165,6 +165,7 @@ bibliotheca/
 Licensed under the [MIT License](LICENSE).
 
 ---
+## Join us on Discord! https://discord.gg/Hc8C5eRm7Q
 
 ## ❤️ Contribute
 
