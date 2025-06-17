@@ -129,7 +129,6 @@
 <div class="bookshelf-bg">
   <div class="bookshelf-row row">
     {% for book in books %}
-<<<<<<< main
       <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 mb-4">
         <div class="book-card">
           {% if book.cover_url %}
@@ -143,35 +142,6 @@
           </div>
           <div class="book-author">
             {{ book.author }}
-=======
-      <div class="book-card">
-        {% if book.cover_url %}
-          <img src="{{ book.cover_url }}" alt="cover" class="book-cover-shelf"
-               onerror="this.onerror=null;this.src='{{ url_for('static', filename='book_cover.png') }}';">
-        {% else %}
-          <img src="{{ url_for('static', filename='book_cover.png') }}" alt="cover" class="book-cover-shelf">
-        {% endif %}
-        <div class="book-title">
-          <a href="{{ url_for('main.view_book', uid=book.uid) }}">{{ book.title }}</a>
-        </div>
-        <div class="book-author">
-          {{ book.author }}
-        </div>
-        {% if book.published_date %}
-          <div style="font-size:0.8em; color:#666; margin-bottom:2px;">{{ book.published_date }}</div>
-        {% endif %}
-        {% if book.page_count %}
-          <div style="font-size:0.8em; color:#666; margin-bottom:2px;">{{ book.page_count }} pages</div>
-        {% endif %}
-        {% if book.publisher %}
-          <div style="font-size:0.8em; color:#666; margin-bottom:4px;">{{ book.publisher }}</div>
-        {% endif %}
-        {% if book.categories %}
-          <div style="font-size:0.75em; color:#888; margin-bottom:4px; text-align:center;">
-            {% for category in book.categories.split(',')[:2] %}
-              <span class="badge bg-light text-dark me-1">{{ category.strip() }}</span>
-            {% endfor %}
->>>>>>> main
           </div>
           {% if book.categories %}
             <div style="font-size:0.75em; color:#888; margin-bottom:4px; text-align:center;">
