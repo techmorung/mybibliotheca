@@ -148,6 +148,35 @@ def create_default_admin_if_needed():
         print(f"⚠️  Failed to create default admin: {e}")
         return None
 
+def assign_existing_books_to_admin():
+    """Assign existing books without user_id to the admin user"""
+    try:
+        # Import Book model here to avoid circular imports
+        from .models import Book
+        
+        # Find the admin user
+        admin_user = User.query.filter_by(is_admin=True).first()
+        if not admin_user:
+            print("⚠️  No admin user found, cannot assign books")
+            return
+        
+        # Find books without user_id
+        orphaned_books = Book.query.filter_by(user_id=None).all()
+        if not orphaned_books:
+            print("✅ No orphaned books found")
+            return
+            
+        # Assign orphaned books to admin
+        for book in orphaned_books:
+            book.user_id = admin_user.id
+            
+        db.session.commit()
+        print(f"✅ Assigned {len(orphaned_books)} orphaned books to admin user: {admin_user.username}")
+        
+    except Exception as e:
+        print(f"⚠️  Failed to assign orphaned books to admin: {e}")
+        db.session.rollback()
+
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
@@ -195,6 +224,7 @@ def create_app():
             db.create_all()
             create_default_admin_if_needed()
         else:
+            print("📚 Database already exists...")
             print("✅ Tables present, checking for migrations...")
             
             # Check for user table (new in v2)
@@ -203,6 +233,11 @@ def create_app():
                 db.create_all()
                 create_default_admin_if_needed()
                 print("✅ User tables created.")
+            
+            # Only assign orphaned books AFTER user table exists
+            if 'user' in inspector.get_table_names():
+                print("📚 Checking for orphaned books...")
+                assign_existing_books_to_admin()
             
             # Run security/privacy field migration
             run_security_privacy_migration(inspector, db.engine)
@@ -216,25 +251,17 @@ def create_app():
                     if 'user_id' not in columns:
                         print("🔄 Adding user_id to book table...")
                         with db.engine.connect() as conn:
-                            # Add user_id column as nullable first
-                            conn.execute(text("ALTER TABLE book ADD COLUMN user_id INTEGER"))
-                            # We'll handle data migration separately
-                            conn.commit()
-                        print("✅ user_id column added to book table.")
+                            trans = conn.begin()
+                            try:
+                                conn.execute(text("ALTER TABLE book ADD COLUMN user_id INTEGER"))
+                                trans.commit()
+                                print("✅ user_id column added to book table.")
+                            except Exception as e:
+                                trans.rollback()
+                                raise e
                         
-                        # Assign books to default admin if no users exist
-                        if User.query.count() == 0:
-                            admin_user = create_default_admin_if_needed()
-                            if admin_user:
-                                # Import here to avoid circular import
-                                from .models import Book
-                                unassigned_books = Book.query.filter_by(user_id=None).all()
-                                if unassigned_books:
-                                    print(f"🔄 Assigning {len(unassigned_books)} books to admin user...")
-                                    for book in unassigned_books:
-                                        book.user_id = admin_user.id
-                                    db.session.commit()
-                                    print("✅ Books assigned to admin user.")
+                        # Assign books to default admin after adding user_id column
+                        assign_existing_books_to_admin()
                     
                     # Check for other missing columns
                     new_columns = ['description', 'published_date', 'page_count', 'categories', 
@@ -244,28 +271,31 @@ def create_app():
                     if missing_columns:
                         print(f"🔄 Adding missing book columns: {missing_columns}")
                         with db.engine.connect() as conn:
-                            for col_name in missing_columns:
-                                if col_name in ['page_count', 'rating_count']:
-                                    conn.execute(text(f"ALTER TABLE book ADD COLUMN {col_name} INTEGER"))
-                                elif col_name == 'average_rating':
-                                    conn.execute(text(f"ALTER TABLE book ADD COLUMN {col_name} REAL"))
-                                elif col_name in ['categories', 'publisher']:
-                                    conn.execute(text(f"ALTER TABLE book ADD COLUMN {col_name} VARCHAR(500)"))
-                                elif col_name == 'language':
-                                    conn.execute(text(f"ALTER TABLE book ADD COLUMN {col_name} VARCHAR(10)"))
-                                elif col_name == 'published_date':
-                                    conn.execute(text(f"ALTER TABLE book ADD COLUMN {col_name} VARCHAR(50)"))
-                                elif col_name == 'created_at':
-                                    conn.execute(text(f"ALTER TABLE book ADD COLUMN {col_name} DATETIME"))
-                                else:  # description
-                                    conn.execute(text(f"ALTER TABLE book ADD COLUMN {col_name} TEXT"))
-                            conn.commit()
-                        print("✅ Book schema migration completed.")
+                            trans = conn.begin()
+                            try:
+                                for col_name in missing_columns:
+                                    if col_name in ['page_count', 'rating_count']:
+                                        conn.execute(text(f"ALTER TABLE book ADD COLUMN {col_name} INTEGER"))
+                                    elif col_name == 'average_rating':
+                                        conn.execute(text(f"ALTER TABLE book ADD COLUMN {col_name} REAL"))
+                                    elif col_name in ['categories', 'publisher']:
+                                        conn.execute(text(f"ALTER TABLE book ADD COLUMN {col_name} VARCHAR(500)"))
+                                    elif col_name == 'language':
+                                        conn.execute(text(f"ALTER TABLE book ADD COLUMN {col_name} VARCHAR(10)"))
+                                    elif col_name == 'published_date':
+                                        conn.execute(text(f"ALTER TABLE book ADD COLUMN {col_name} VARCHAR(50)"))
+                                    elif col_name == 'created_at':
+                                        conn.execute(text(f"ALTER TABLE book ADD COLUMN {col_name} DATETIME"))
+                                    else:  # description
+                                        conn.execute(text(f"ALTER TABLE book ADD COLUMN {col_name} TEXT"))
+                                trans.commit()
+                                print("✅ Book schema migration completed.")
+                            except Exception as e:
+                                trans.rollback()
+                                raise e
                         
                 except Exception as e:
                     print(f"⚠️  Book schema migration failed: {e}")
-                    print("📚 Creating fresh database schema...")
-                    db.create_all()
             
             # Check for reading_log table updates
             if 'reading_log' in existing_tables:

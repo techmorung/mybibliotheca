@@ -313,10 +313,11 @@ def library():
     publisher_filter = request.args.get('publisher', '')
     language_filter = request.args.get('language', '')
     search_query = request.args.get('search', '')
-    
-    books_query = Book.query
-    
-    # Apply filters
+
+    # Start with books belonging to current user
+    books_query = Book.query.filter_by(user_id=current_user.id)
+
+    # Apply additional filters
     if category_filter:
         books_query = books_query.filter(Book.categories.contains(category_filter))
     if publisher_filter:
@@ -329,15 +330,15 @@ def library():
             (Book.author.ilike(f'%{search_query}%')) |
             (Book.description.ilike(f'%{search_query}%'))
         )
-    
+
     books = books_query.all()
-    
+
     # Get distinct values for filter dropdowns
     all_books = Book.query.filter_by(user_id=current_user.id).all()
     categories = set()
     publishers = set()
     languages = set()
-    
+
     for book in all_books:
         if book.categories:
             categories.update([cat.strip() for cat in book.categories.split(',')])
@@ -345,9 +346,12 @@ def library():
             publishers.add(book.publisher)
         if book.language:
             languages.add(book.language)
-    
+
+    # Fetch all users for assignment
+    users = User.query.all()
+
     return render_template(
-        'library.html', 
+        'library.html',
         books=books,
         categories=sorted(categories),
         publishers=sorted(publishers),
@@ -355,7 +359,8 @@ def library():
         current_category=category_filter,
         current_publisher=publisher_filter,
         current_language=language_filter,
-        current_search=search_query
+        current_search=search_query,
+        users=users  # Pass users to the template
     )
 
 @bp.route('/public-library')
@@ -894,3 +899,22 @@ def user_profile(user_id):
                          currently_reading=currently_reading,
                          recent_finished=recent_finished,
                          reading_logs_count=reading_logs_count)
+
+@bp.route('/book/<uid>/assign', methods=['POST'])
+@login_required
+def assign_book(uid):
+    book = Book.query.filter_by(uid=uid).first_or_404()
+    if not current_user.is_admin:
+        flash('Only admins can assign books.', 'danger')
+        return redirect(url_for('main.library'))
+
+    user_id = request.form.get('user_id')
+    user = User.query.get(user_id)
+    if not user:
+        flash('Invalid user selected.', 'danger')
+        return redirect(url_for('main.library'))
+
+    book.user_id = user.id
+    db.session.commit()
+    flash(f'Book "{book.title}" assigned to {user.username}.', 'success')
+    return redirect(url_for('main.library'))
