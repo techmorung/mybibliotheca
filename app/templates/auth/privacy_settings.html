@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Privacy Settings - Bibliotheca{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2><i class="bi bi-shield-lock"></i> Privacy Settings</h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-eye"></i> Sharing Preferences
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-4">
+                    Control what information you share with other users and how your reading activity is displayed.
+                </p>
+                
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-4">
+                        <div class="form-check form-switch">
+                            {{ form.share_current_reading(class="form-check-input") }}
+                            {{ form.share_current_reading.label(class="form-check-label") }}
+                        </div>
+                        <small class="text-muted">Allow others to see what book you're currently reading</small>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="form-check form-switch">
+                            {{ form.share_reading_activity(class="form-check-input") }}
+                            {{ form.share_reading_activity.label(class="form-check-label") }}
+                        </div>
+                        <small class="text-muted">Share your reading statistics and activity timeline</small>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="form-check form-switch">
+                            {{ form.share_library(class="form-check-input") }}
+                            {{ form.share_library.label(class="form-check-label") }}
+                        </div>
+                        <small class="text-muted">Make your book library visible to other users</small>
+                    </div>
+                    
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card bg-light">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="bi bi-info-circle"></i> Privacy Information
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Current Reading:</strong>
+                    <p class="small text-muted">Controls whether your current book appears in activity feeds and your profile.</p>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Reading Activity:</strong>
+                    <p class="small text-muted">Includes reading statistics, completion dates, and reading history.</p>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Library Visibility:</strong>
+                    <p class="small text-muted">Your complete book collection and ratings will be visible to others.</p>
+                </div>
+                
+                <div class="alert alert-info">
+                    <small>
+                        <i class="bi bi-lightbulb"></i>
+                        <strong>Tip:</strong> You can change these settings at any time. Your data remains secure regardless of these preferences.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

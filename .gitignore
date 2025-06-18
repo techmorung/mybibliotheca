@@ -197,5 +197,20 @@ cython_debug/
 
 # Local book database file
 books.db
-books.db-shm
-books.db-wal
+
+# Temporary files and project notes
+PR_NOTES.md
+TEMP_*.md
+temp_*.md
+*.tmp
+.notes/
+notes/
+project_plan.md
+project_summary.md
+MULTI_USER_PROJECT_PLAN.md
+PROJECT_SUMMARY.md
+temp_cookies.txt
+
+# Database backups
+data/backups/
+documentation.md

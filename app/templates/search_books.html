@@ -1,34 +1,33 @@
 {% extends "base.html" %}
+
+{% block title %}Search Books - Bibliotheca{% endblock %}
+
 {% block content %}
 <h2>Search for Books</h2>
 <form method="post" class="mb-4">
-  <div class="input-group">
-    <input type="text" name="query" value="{{ query }}" placeholder="Enter book title, author, or ISBN" class="form-control" required>
-    <button type="submit" class="btn btn-primary">Search</button>
-  </div>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+  <input type="text" name="query" value="{{ query }}" placeholder="Enter book title" class="form-control" required>
+  <button type="submit" class="btn btn-primary mt-2">Search</button>
 </form>
 {% if results %}
   <ul class="list-group">
     {% for book in results %}
-      <li class="list-group-item d-flex flex-column flex-sm-row align-items-sm-center">
+      <li class="list-group-item d-flex align-items-center">
         {% if book.image %}
-          <img src="{{ book.image }}" alt="{{ book.title }} cover" class="img-fluid rounded me-sm-3 mb-2 mb-sm-0" style="max-height:80px; max-width:60px;">
-        {% else %}
-          <div class="me-sm-3 mb-2 mb-sm-0" style="width:60px; height:80px; background-color:#e9ecef; display:flex; align-items:center; justify-content:center; text-align:center; border-radius: .25rem;">
-            <small class="text-muted">No Cover</small>
-          </div>
+          <img src="{{ book.image }}" alt="cover" style="height:60px;width:auto;margin-right:16px;">
         {% endif %}
-        <div class="flex-grow-1 mb-2 mb-sm-0">
+        <div class="flex-grow-1">
           <strong>{{ book.title }}</strong><br>
           <small>by {{ book.authors }}</small><br>
           <small>ISBN: {{ book.isbn or 'N/A' }}</small>
         </div>
-        <form method="post" action="{{ url_for('main.add_book_from_search') }}" class="ms-sm-3 align-self-sm-center align-self-stretch">
+        <form method="post" action="{{ url_for('main.add_book_from_search') }}" class="ms-3">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
           <input type="hidden" name="title" value="{{ book.title }}">
           <input type="hidden" name="author" value="{{ book.authors }}">
           <input type="hidden" name="isbn" value="{{ book.isbn }}">
           <input type="hidden" name="cover_url" value="{{ book.image }}">
-          <button type="submit" class="btn btn-success w-100">Add Book</button>
+          <button type="submit" class="btn btn-success btn-sm">Add Book</button>
         </form>
       </li>
     {% endfor %}
