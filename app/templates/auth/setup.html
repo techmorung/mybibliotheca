@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Initial Setup - Bibliotheca{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header text-center">
+                <h4>📚 Welcome to Bibliotheca</h4>
+                <p class="mb-0 text-muted">Initial Setup Required</p>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-info-circle"></i> First Time Setup</h6>
+                    <p class="mb-0">
+                        Welcome! This appears to be your first time running Bibliotheca. 
+                        Please create an administrator account to get started.
+                    </p>
+                </div>
+
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.username.label(class="form-label") }}
+                        {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else "")) }}
+                        {% if form.username.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.username.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="form-text text-muted">This will be your administrator username</small>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.email.label(class="form-label") }}
+                        {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
+                        {% if form.email.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.email.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="form-text text-muted">Administrator email address</small>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.password.label(class="form-label") }}
+                        {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else "")) }}
+                        {% if form.password.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.password.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="alert alert-info mt-2" role="alert">
+                            <h6><i class="fas fa-shield-alt"></i> Password Requirements:</h6>
+                            <ul class="mb-0">
+                                <li>At least 12 characters long</li>
+                                <li>Contains at least one uppercase letter (A-Z)</li>
+                                <li>Contains at least one lowercase letter (a-z)</li>
+                                <li>Contains at least one number (0-9)</li>
+                                <li>Contains at least one special character (!@#$%^&*()_+-=[]{};\':\"\\|,.<>/?)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        {{ form.password2.label(class="form-label") }}
+                        {{ form.password2(class="form-control" + (" is-invalid" if form.password2.errors else "")) }}
+                        {% if form.password2.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.password2.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-primary btn-lg") }}
+                    </div>
+                </form>
+
+                <div class="alert alert-success mt-4">
+                    <h6><i class="fas fa-check-circle"></i> After Setup</h6>
+                    <p class="mb-0">
+                        Once you complete this setup, you'll be able to log in as an administrator 
+                        and start adding books to your library. You can create additional user accounts 
+                        from the admin panel.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

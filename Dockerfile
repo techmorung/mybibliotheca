@@ -63,13 +63,6 @@ RUN mkdir -p /app/data && \
 ENV DATABASE_URL=sqlite:////app/data/books.db
 ENV WTF_CSRF_ENABLED=True
 
-# Default admin credentials (override with docker run -e or docker-compose)
-# These defaults should be changed in production via environment variables
-# The default password will be force-changed on first login
-ENV ADMIN_EMAIL=admin@bibliotheca.local
-ENV ADMIN_USERNAME=admin
-ENV ADMIN_PASSWORD=G7#xP@9zL!qR2
-
 # Flask environment (using FLASK_DEBUG instead of deprecated FLASK_ENV)
 ENV FLASK_DEBUG=false
 

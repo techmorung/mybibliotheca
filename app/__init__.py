@@ -111,42 +111,7 @@ def run_security_privacy_migration(inspector, db_engine):
     except Exception as e:
         print(f"⚠️  Security/privacy migration failed: {e}")
 
-def create_default_admin_if_needed():
-    """Create default admin user if no users exist"""
-    try:
-        if User.query.count() == 0:
-            admin_username = os.environ.get('ADMIN_USERNAME', 'admin')
-            admin_email = os.environ.get('ADMIN_EMAIL', 'admin@bibliotheca.local')
-            admin_password = os.environ.get('ADMIN_PASSWORD', 'G7#xP@9zL!qR2')
-            
-            print(f"Creating default admin with username: {admin_username}, email: {admin_email}")
-            
-            admin_user = User(
-                username=admin_username,
-                email=admin_email,
-                is_admin=True,
-                created_at=datetime.now()
-            )
-            
-            # Debug password validation
-            if not User.is_password_strong(admin_password):
-                print("Password validation failed for default admin password.")
-                raise ValueError("Default admin password does not meet security requirements.")
-            
-            admin_user.set_password(admin_password)
-            db.session.add(admin_user)
-            db.session.commit()
-            
-            print(f"✅ Created default admin user: {admin_username}")
-            print(f"⚠️  Default password: {admin_password}")
-            print("🔒 Please change the admin password after setup!")
-            return admin_user
-        else:
-            print("✅ Users already exist, skipping admin creation.")
-            return None
-    except Exception as e:
-        print(f"⚠️  Failed to create default admin: {e}")
-        return None
+
 
 def assign_existing_books_to_admin():
     """Assign existing books without user_id to the admin user"""
@@ -222,7 +187,7 @@ def create_app():
         if not existing_tables:
             print("📚 Creating fresh database schema...")
             db.create_all()
-            create_default_admin_if_needed()
+            print("✅ Database schema created. Setup required on first visit.")
         else:
             print("📚 Database already exists...")
             print("✅ Tables present, checking for migrations...")
@@ -231,11 +196,10 @@ def create_app():
             if 'user' not in existing_tables:
                 print("🔄 Adding user authentication tables...")
                 db.create_all()
-                create_default_admin_if_needed()
-                print("✅ User tables created.")
+                print("✅ User tables created. Setup required on first visit.")
             
-            # Only assign orphaned books AFTER user table exists
-            if 'user' in inspector.get_table_names():
+            # Only assign orphaned books AFTER user table exists and if admin users exist
+            if 'user' in inspector.get_table_names() and User.query.filter_by(is_admin=True).count() > 0:
                 print("📚 Checking for orphaned books...")
                 assign_existing_books_to_admin()
             
@@ -260,8 +224,9 @@ def create_app():
                                 trans.rollback()
                                 raise e
                         
-                        # Assign books to default admin after adding user_id column
-                        assign_existing_books_to_admin()
+                        # Assign books to admin after adding user_id column (only if admin exists)
+                        if User.query.filter_by(is_admin=True).count() > 0:
+                            assign_existing_books_to_admin()
                     
                     # Check for other missing columns
                     new_columns = ['description', 'published_date', 'page_count', 'categories', 
@@ -336,15 +301,23 @@ def create_app():
         
         print("🎉 Database migration completed successfully!")
 
-    # Add middleware to check for forced password changes
+    # Add middleware to check for setup and forced password changes
     @app.before_request
-    def check_password_change_required():
+    def check_setup_and_password_requirements():
         from flask import request, redirect, url_for
         from flask_login import current_user
         from .debug_utils import debug_middleware
         
         # Run debug middleware if enabled
         debug_middleware()
+        
+        # Check if setup is needed (no users exist)
+        if User.query.count() == 0:
+            # Skip for setup route and static files
+            if request.endpoint in ['auth.setup', 'static'] or (request.endpoint and request.endpoint.startswith('static')):
+                return
+            # Redirect to setup page
+            return redirect(url_for('auth.setup'))
         
         # Skip if user is not authenticated
         if not current_user.is_authenticated:
@@ -354,6 +327,7 @@ def create_app():
         allowed_endpoints = [
             'auth.forced_password_change',
             'auth.logout',
+            'auth.setup',
             'static'
         ]
         

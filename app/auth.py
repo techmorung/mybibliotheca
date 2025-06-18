@@ -2,11 +2,60 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request,
 from flask_login import login_user, logout_user, current_user, login_required
 from .models import User, db
 from .forms import (LoginForm, RegistrationForm, UserProfileForm, ChangePasswordForm,
-                   PrivacySettingsForm, ForcedPasswordChangeForm)
+                   PrivacySettingsForm, ForcedPasswordChangeForm, SetupForm)
 from .debug_utils import debug_route, debug_auth, debug_csrf, debug_session
 from datetime import datetime, timezone
 
 auth = Blueprint('auth', __name__)
+
+@auth.route('/setup', methods=['GET', 'POST'])
+@debug_route('SETUP')
+def setup():
+    """Initial setup route for creating the first admin user"""
+    debug_auth("Setup route accessed")
+    
+    # Check if any users already exist
+    if User.query.count() > 0:
+        debug_auth("Users already exist, redirecting to login")
+        flash('Setup has already been completed.', 'info')
+        return redirect(url_for('auth.login'))
+    
+    form = SetupForm()
+    debug_auth("Setup form created")
+    
+    if form.validate_on_submit():
+        debug_auth("Setup form submitted and validated")
+        try:
+            # Create the first admin user
+            admin_user = User(
+                username=form.username.data,
+                email=form.email.data,
+                is_admin=True,
+                is_active=True,
+                created_at=datetime.now(timezone.utc)
+            )
+            admin_user.set_password(form.password.data)
+            
+            db.session.add(admin_user)
+            db.session.commit()
+            
+            debug_auth(f"First admin user created: {admin_user.username}")
+            
+            # Automatically log in the new admin user
+            login_user(admin_user)
+            
+            flash('Setup completed successfully! Welcome to Bibliotheca.', 'success')
+            return redirect(url_for('main.index'))
+            
+        except Exception as e:
+            debug_auth(f"Setup failed: {e}")
+            db.session.rollback()
+            flash('Setup failed. Please try again.', 'error')
+    else:
+        if request.method == 'POST':
+            debug_auth(f"Setup form validation failed: {form.errors}")
+    
+    return render_template('auth/setup.html', title='Initial Setup', form=form)
 
 @auth.route('/login', methods=['GET', 'POST'])
 @debug_route('AUTH')

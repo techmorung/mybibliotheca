@@ -16,14 +16,16 @@ Bibliotheca V2.0 introduces a complete multi-user authentication system with:
 
 ### First Time Setup
 
-When you first run Bibliotheca V2.0, an admin user is automatically created during migration:
+When you first run Bibliotheca V2.0, you'll complete a secure setup process:
 
-**Default Admin Credentials:**
-- Username: `admin` (or from `ADMIN_USERNAME` env var)
-- Email: `admin@bibliotheca.local` (or from `ADMIN_EMAIL` env var)  
-- Password: `P@ssw0rd!Secure123` (or from `ADMIN_PASSWORD` env var)
+1. **Navigate to the application** in your web browser
+2. **Complete the setup form** to create your administrator account:
+   - Choose a unique admin username
+   - Provide a valid email address
+   - Create a strong password meeting security requirements
+3. **Begin using Bibliotheca** immediately after setup
 
-⚠️ **IMPORTANT**: Change the default admin password immediately after first login!
+✅ **Secure by Design**: No default passwords or credentials - you're in complete control of your admin account!
 
 ### Environment Variables
 
@@ -34,10 +36,9 @@ Configure authentication via environment variables:
 SECRET_KEY=your-super-secret-key-here-32-chars-minimum
 SECURITY_PASSWORD_SALT=your-password-salt
 
-# Admin user setup (for initial migration)
-ADMIN_EMAIL=admin@bibliotheca.local
-ADMIN_USERNAME=admin
-ADMIN_PASSWORD=P@ssw0rd!Secure123
+# Optional timezone setting
+TIMEZONE=America/Chicago
+```
 
 # Optional: Email configuration (future feature)
 MAIL_SERVER=smtp.gmail.com
@@ -162,11 +163,6 @@ services:
       - SECRET_KEY=your-super-secret-key-change-this
       - SECURITY_PASSWORD_SALT=your-salt-change-this
       
-      # Admin user settings (change these!)
-      - ADMIN_EMAIL=admin@bibliotheca.local
-      - ADMIN_USERNAME=admin
-      - ADMIN_PASSWORD=changeme123
-      
       # Optional app settings
       - TIMEZONE=America/Chicago
       - WORKERS=6
@@ -178,11 +174,12 @@ volumes:
 
 ### Security Best Practices
 
-1. **Change Default Credentials**: Always change the default admin password
+1. **Secure Setup**: Use the interactive setup page to create your admin account with a strong, unique password
 2. **Secure Environment Variables**: Use strong, unique values for SECRET_KEY and SECURITY_PASSWORD_SALT
 3. **Use HTTPS**: Deploy behind a reverse proxy with SSL/TLS
 4. **Regular Backups**: Backup your database regularly
 5. **Monitor Access**: Check logs for unusual activity
+6. **Password Management**: New users are automatically prompted to change their password on first login
 
 ## Troubleshooting
 

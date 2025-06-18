@@ -98,9 +98,6 @@ print_status "Running migration test..."
 docker run --rm \
     -v "$(pwd)/data-test:/app/data" \
     -e DATABASE_URL=sqlite:////app/data/books.db \
-    -e ADMIN_USERNAME=testadmin \
-    -e ADMIN_PASSWORD=testpass123 \
-    -e ADMIN_EMAIL=test@example.com \
     bibliotheca-bibliotheca python3 migrate_to_multi_user.py
 
 if [ $? -eq 0 ]; then

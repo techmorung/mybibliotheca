@@ -109,10 +109,10 @@ All passwords must meet these security requirements:
 # 1. Start container
 docker compose up -d
 
-# 2. Change default admin password
-docker exec -it bibliotheca python3 admin_tools.py reset-admin-password
+# 2. Visit the application and complete the setup form
+# Navigate to http://localhost:5054 and create your admin account
 
-# 3. Verify admin user
+# 3. Verify admin user was created successfully
 docker exec -it bibliotheca python3 admin_tools.py list-users
 ```
 
@@ -145,11 +145,9 @@ services:
     image: bibliotheca:latest
     # ... other config ...
     environment:
-      # Admin user settings (change these!)
-      # Use: docker exec -it bibliotheca python3 admin_tools.py reset-admin-password
-      - ADMIN_EMAIL=admin@bibliotheca.local
-      - ADMIN_USERNAME=admin
-      - ADMIN_PASSWORD=P@ssw0rd!Secure123
+      # Security settings 
+      - SECRET_KEY=your-secret-key
+      - SECURITY_PASSWORD_SALT=your-salt
 ```
 
 ### Container Access
@@ -193,10 +191,11 @@ For troubleshooting, check:
 ## Best Practices
 
 ### Security
-1. **Change default passwords immediately** after first deployment
+1. **Complete secure setup** using the interactive setup page on first deployment
 2. **Use interactive password prompts** instead of command-line passwords
 3. **Regularly rotate admin passwords** for enhanced security
 4. **Limit admin accounts** to only necessary users
+5. **Leverage automatic password changes** for new users
 
 ### Backup and Recovery
 1. **Regular database backups** before admin changes

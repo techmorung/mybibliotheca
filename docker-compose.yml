@@ -6,52 +6,18 @@ services:
     ports:
       - "5054:5054"
     volumes:
-      - ./data:/app/data
+      # To change the data directory, change bibliotheca_data to your desired location on your local machine
+      # and ensure the application has write permissions to that directory.
+      - bibliotheca_data:/app/data
     environment:
-      # Security (change these in production!)
-      - SECRET_KEY=dev-secret-key-change-in-production
-      - WTF_CSRF_ENABLED=true
-      
-      # Database
-      - DATABASE_URL=sqlite:////app/data/books.db
-      
-      # Admin user settings (change these!)
-      # Use: docker exec -it bibliotheca python3 admin_tools.py reset-admin-password
-      - ADMIN_EMAIL=admin@bibliotheca.local
-      - ADMIN_USERNAME=admin
-      - ADMIN_PASSWORD=G7#xP@9zL!qR2
+      # Security - MUST be set via .env file or environment
+      - SECRET_KEY=${SECRET_KEY}
+      - SECURITY_PASSWORD_SALT=${SECURITY_PASSWORD_SALT}
       
       # Application settings
-      - TIMEZONE=UTC
-      - READING_STREAK_OFFSET=0
-      - FLASK_DEBUG=true
-      
-      # Gunicorn settings
-      - WORKERS=2
+      - TIMEZONE=${TIMEZONE:-UTC}
+      - WORKERS=${WORKERS:-4}
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5054/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
-  # Test service for running automated tests
-  bibliotheca-test:
-    build: .
-    volumes:
-      - ./data-test:/app/data
-      - .:/app/test-source:ro
-    environment:
-      - SECRET_KEY=test-secret-key
-      - DATABASE_URL=sqlite:////app/data/test_books.db
-      - ADMIN_EMAIL=test@bibliotheca.local
-      - ADMIN_USERNAME=testadmin
-      - ADMIN_PASSWORD=testpass123
-      - FLASK_DEBUG=true
-    command: python3 -m pytest tests/ -v
-    profiles:
-      - test
 
 volumes:
   bibliotheca_data:

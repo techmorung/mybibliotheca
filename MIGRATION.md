@@ -18,8 +18,8 @@ Bibliotheca now uses an **automatic migration system** that runs when the applic
 - Maintains data integrity during schema changes
 
 ### ✅ Multi-User Migration
-- Creates default admin user if no users exist
-- Assigns existing books/reading logs to the admin user
+- Redirects to setup page if no users exist 
+- Assigns existing books/reading logs to admin users (if they exist)
 - Handles transition from single-user to multi-user system
 
 ### ✅ Security & Privacy Features
@@ -47,25 +47,24 @@ When the application starts, it will:
    - User table: security and privacy fields
    - Reading log table: `user_id`, `created_at`
 
-5. **Create default admin user** (if no users exist)
-   - Username: `admin` (or `$ADMIN_USERNAME`)
-   - Email: `admin@bibliotheca.local` (or `$ADMIN_EMAIL`)
-   - Password: `changeme123` (or `$ADMIN_PASSWORD`)
-   - **⚠️ Change the default password after setup!**
+5. **Setup requirement** (if no users exist)
+   - User will be redirected to setup page on first visit
+   - Admin account created through secure setup form
+   - No default credentials used
 
-6. **Assign orphaned data**
-   - Books without `user_id` → assigned to admin
-   - Reading logs without `user_id` → assigned to admin
+6. **Assign orphaned data** (only if admin users exist)
+   - Books without `user_id` → assigned to existing admin
+   - Reading logs without `user_id` → assigned to existing admin
 
-## Environment Variables
+## Interactive Setup
 
-You can customize the default admin user creation:
+For new installations with no users:
 
-```bash
-ADMIN_USERNAME=myadmin
-ADMIN_EMAIL=admin@mycompany.com
-ADMIN_PASSWORD=mysecurepassword
-```
+- **Automatic redirect**: Application redirects to `/auth/setup` on first visit
+- **Secure setup form**: Create admin account with strong password requirements
+- **No default credentials**: Complete control over admin account creation
+- **Password requirements**: Strong password automatically enforced
+- **Immediate access**: Admin user is logged in after successful setup
 
 ## Manual Migration Scripts (Deprecated)
 
@@ -156,10 +155,11 @@ This script checks:
 - Verify write permissions to data directory
 - Database may be locked by another process
 
-**Default admin creation fails:**
-- Check for existing users with same username/email
-- Verify password meets security requirements
-- Check database constraints
+**Setup page issues:**
+- Ensure no existing users in database (setup only runs for fresh installs)
+- Verify password meets security requirements  
+- Check database constraints and permissions
+- Ensure application can write to database
 
 ### Getting Help
 

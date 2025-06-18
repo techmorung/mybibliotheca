@@ -106,3 +106,32 @@ class ForcedPasswordChangeForm(FlaskForm):
         EqualTo('new_password', message='Passwords must match')
     ])
     submit = SubmitField('Set New Password')
+
+class SetupForm(FlaskForm):
+    """Form for initial admin user setup during first-time installation"""
+    username = StringField('Admin Username', validators=[
+        DataRequired(), 
+        Length(min=3, max=20, message='Username must be between 3 and 20 characters')
+    ])
+    email = StringField('Admin Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[
+        DataRequired(),
+        validate_strong_password
+    ])
+    password2 = PasswordField('Repeat Password', validators=[
+        DataRequired(), 
+        EqualTo('password', message='Passwords must match')
+    ])
+    submit = SubmitField('Complete Setup')
+
+    def validate_username(self, username):
+        """Ensure no users exist with this username"""
+        user = User.query.filter_by(username=username.data).first()
+        if user is not None:
+            raise ValidationError('Please use a different username.')
+
+    def validate_email(self, email):
+        """Ensure no users exist with this email"""
+        user = User.query.filter_by(email=email.data).first()
+        if user is not None:
+            raise ValidationError('Please use a different email address.')
