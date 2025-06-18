@@ -1,0 +1,34 @@
+name: 🐛 Notify Discord on New Issues
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  discord:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Discord
+        uses: benc-uk/discohook-action@v1
+        with:
+          # your Discord webhook URL stored as a secret
+          webhook: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          username: GitHub Issue Bot
+          avatar_url: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+          embeds: |
+            [
+              {
+                "title": "${{ github.event.issue.title }}",
+                "url": "${{ github.event.issue.html_url }}",
+                "description": ${{ toJson(github.event.issue.body) }},
+                "color": 15158332,
+                "fields": [
+                  {
+                    "name": "Opened by",
+                    "value": "${{ github.event.issue.user.login }}",
+                    "inline": true
+                  }
+                ],
+                "timestamp": "${{ github.event.issue.created_at }}"
+              }
+            ]
