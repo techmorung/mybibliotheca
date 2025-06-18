@@ -29,7 +29,7 @@
                                 </small>
                             </div>
                             <div class="text-end">
-                                <small class="text-muted">{{ log.created_at.strftime('%I:%M %p') if hasattr(log, 'created_at') and log.created_at else '' }}</small>
+                                <small class="text-muted">{{ log.created_at.strftime('%I:%M %p') if log.created_at else '' }}</small>
                             </div>
                         </div>
                     </div>
