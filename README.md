@@ -47,10 +47,15 @@ Bibliotheca can be run completely in Docker — no need to install Python or dep
 
 ```bash
 docker run -d \
-  -v bibliotheca_data:/app/data \
-  -p 5054:5054 \
   --name bibliotheca \
+  -p 5054:5054 \
+  -v /path/to/data:/app/data \
+  -e TIMEZONE=America/Chicago \
+  -e READING_STREAK_OFFSET=0 \
+  -e WORKERS=6 \
+  --restart unless-stopped \
   pickles4evaaaa/bibliotheca:latest
+
 ````
 
 ---
