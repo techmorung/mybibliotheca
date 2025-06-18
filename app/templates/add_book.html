@@ -1,62 +1,434 @@
 {% extends "base.html" %}
 {% block title %}Add Book - Bibliotheca{% endblock %}
 {% block content %}
-<h1>Add a New Book</h1>
-<form method="post">
-  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-  <button type="button" class="btn btn-secondary" onclick="startScanner()">Scan Barcode</button>
 
-  <!-- ISBN input -->
-  <input id="isbn" name="isbn" class="form-control" value="{{ request.form.isbn or '' }}" type="text" pattern="[\d-]+" title="Enter a valid ISBN (digits and hyphens only)">
+<style>
+  :root {
+    --primary-brown: #8B4513;
+    --light-brown: #D2B48C;
+    --cream: #F5F5DC;
+    --warm-white: #FEFEFE;
+    --gold: #DAA520;
+    --shadow: rgba(0,0,0,0.1);
+    --hover-shadow: rgba(0,0,0,0.2);
+  }
 
-  <!-- Constrained scanner box -->
-  <div id="scanner" style="
-    width: 300px;
-    height: 200px;
-    display: none;
-    border: 2px solid #ccc;
-    margin: 1rem 0;
-    overflow: hidden;
+  .library-header {
+    background: linear-gradient(135deg, var(--primary-brown) 0%, var(--light-brown) 100%);
+    color: white;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border-radius: 15px;
+    text-align: center;
     position: relative;
-    background-color: #000;
-  "></div>
+    overflow: hidden;
+  }
 
-  <!-- Fetch and book data inputs -->
-  <button name="fetch" value="1" type="submit" class="btn btn-secondary">Fetch Book Data</button><br>
-  Title: <input id="title" name="title" value="{{ book_data.title if book_data else request.form.title or '' }}"><br>
-  Author: <input name="author" value="{{ book_data.author if book_data else request.form.author or '' }}"><br>
-  Start Date: <input name="start_date" type="date"><br>
-  Finish Date: <input name="finish_date" type="date"><br>
+  .library-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('https://www.transparenttextures.com/patterns/paper-fibers.png');
+    opacity: 0.3;
+  }
 
-  {% if book_data and book_data.cover %}
-  <div class="mb-3 text-center">
-    <img src="{{ book_data.cover }}" alt="Book Cover" class="img-fluid rounded book-cover">
+  .library-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    position: relative;
+    z-index: 1;
+  }
+
+  .form-container {
+    background: var(--cream);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 8px 25px var(--shadow);
+    border: 3px solid var(--light-brown);
+  }
+
+  .scanner-section {
+    background: var(--warm-white);
+    border: 2px solid var(--light-brown);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  .scanner-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-bottom: 1rem;
+  }
+
+  .btn-scan {
+    background: linear-gradient(135deg, var(--primary-brown), var(--light-brown));
+    border: none;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(139, 69, 19, 0.3);
+  }
+
+  .btn-scan:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 69, 19, 0.4);
+    color: white;
+  }
+
+  .btn-stop {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    border: none;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+  }
+
+  .btn-stop:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+    color: white;
+  }
+
+  #scanner {
+    border: 3px solid var(--primary-brown) !important;
+    border-radius: 15px !important;
+    margin: 1rem auto !important;
+    box-shadow: 0 8px 25px var(--shadow) !important;
+    position: relative;
+    overflow: hidden;
+  }
+
+  #scanner-overlay {
+    border: 3px solid var(--gold) !important;
+    box-shadow: 0 0 20px rgba(218, 165, 32, 0.6);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% { box-shadow: 0 0 20px rgba(218, 165, 32, 0.6); }
+    50% { box-shadow: 0 0 30px rgba(218, 165, 32, 0.8); }
+    100% { box-shadow: 0 0 20px rgba(218, 165, 32, 0.6); }
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group label {
+    display: block;
+    font-weight: 600;
+    color: var(--primary-brown);
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--light-brown);
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: var(--warm-white);
+  }
+
+  .form-control:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 15px rgba(218, 165, 32, 0.3);
+  }
+
+  .btn-fetch {
+    background: linear-gradient(135deg, var(--gold), #B8860B);
+    border: none;
+    color: white;
+    padding: 0.75rem 2rem;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(218, 165, 32, 0.3);
+    margin-bottom: 1.5rem;
+  }
+
+  .btn-fetch:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(218, 165, 32, 0.4);
+    color: white;
+  }
+
+  .book-cover-preview {
+    text-align: center;
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: var(--warm-white);
+    border: 2px solid var(--light-brown);
+    border-radius: 15px;
+  }
+
+  .book-cover-preview img {
+    max-height: 200px;
+    border-radius: 10px;
+    box-shadow: 0 8px 25px var(--shadow);
+  }
+
+  .checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin: 2rem 0;
+    background: var(--warm-white);
+    padding: 1.5rem;
+    border-radius: 15px;
+    border: 2px solid var(--light-brown);
+  }
+
+  .checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.1rem;
+    color: var(--primary-brown);
+    font-weight: 500;
+  }
+
+  .checkbox-item input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--primary-brown);
+  }
+
+  .btn-submit {
+    background: linear-gradient(135deg, var(--primary-brown), var(--light-brown));
+    border: none;
+    color: white;
+    padding: 1rem 3rem;
+    border-radius: 15px;
+    font-weight: 700;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(139, 69, 19, 0.3);
+    width: 100%;
+    margin: 2rem 0 1rem 0;
+  }
+
+  .btn-submit:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(139, 69, 19, 0.4);
+    color: white;
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--primary-brown);
+    text-decoration: none;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border: 2px solid var(--light-brown);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    background: var(--warm-white);
+  }
+
+  .back-link:hover {
+    background: var(--light-brown);
+    color: white;
+    transform: translateX(-5px);
+  }
+
+  .row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .col-md-6 {
+    flex: 1;
+    min-width: 250px;
+  }
+
+  @media (max-width: 768px) {
+    .scanner-buttons {
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .row {
+      flex-direction: column;
+    }
+    
+    .library-header h1 {
+      font-size: 2rem;
+    }
+  }
+</style>
+
+<div class="library-header">
+  <h1>📚 Add New Book</h1>
+  <p class="mb-0">Scan, search, or manually add books to your library</p>
+</div>
+
+<div class="form-container">
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    
+    <!-- Scanner Section -->
+    <div class="scanner-section">
+      <h4 style="color: var(--primary-brown); margin-bottom: 1rem;">📱 Barcode Scanner</h4>
+      <div class="scanner-buttons">
+        <button type="button" class="btn-scan" onclick="startScanner()">
+          <i class="fas fa-camera"></i> Scan Barcode
+        </button>
+        <button type="button" class="btn-stop" onclick="stopScanner()" style="display: none;" id="stopBtn">
+          <i class="fas fa-stop"></i> Stop Scanner
+        </button>
+      </div>
+      
+      <!-- Scanner viewport -->
+      <div id="scanner" style="
+        width: 100%;
+        max-width: 400px;
+        height: 300px;
+        display: none;
+        margin: 1rem auto;
+        overflow: hidden;
+        position: relative;
+        background-color: #000;
+      ">
+        <div id="scanner-overlay" style="
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 80%;
+          height: 40%;
+          z-index: 10;
+          pointer-events: none;
+        "></div>
+      </div>
+    </div>
+
+    <!-- ISBN and Fetch Section -->
+    <div class="form-group">
+      <label for="isbn">📖 ISBN Number</label>
+      <input id="isbn" name="isbn" class="form-control" value="{{ request.form.isbn or '' }}" 
+             type="text" pattern="[\d-]+" title="Enter a valid ISBN (digits and hyphens only)"
+             placeholder="Enter ISBN or scan barcode above">
+      <button name="fetch" value="1" type="submit" class="btn-fetch mt-2">
+        <i class="fas fa-search"></i> Fetch Book Data
+      </button>
+    </div>
+
+    <!-- Book Details -->
+    <div class="row">
+      <div class="col-md-6">
+        <div class="form-group">
+          <label for="title">📚 Title</label>
+          <input id="title" name="title" class="form-control" 
+                 value="{{ book_data.title if book_data else request.form.title or '' }}"
+                 placeholder="Enter book title">
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="form-group">
+          <label for="author">✍️ Author</label>
+          <input name="author" class="form-control" 
+                 value="{{ book_data.author if book_data else request.form.author or '' }}"
+                 placeholder="Enter author name">
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6">
+        <div class="form-group">
+          <label for="start_date">📅 Start Date</label>
+          <input name="start_date" type="date" class="form-control">
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="form-group">
+          <label for="finish_date">🏁 Finish Date</label>
+          <input name="finish_date" type="date" class="form-control">
+        </div>
+      </div>
+    </div>
+
+    <!-- Book Cover Preview -->
+    {% if book_data and book_data.cover %}
+    <div class="book-cover-preview">
+      <h5 style="color: var(--primary-brown); margin-bottom: 1rem;">📸 Book Cover</h5>
+      <img src="{{ book_data.cover }}" alt="Book Cover" class="img-fluid">
+    </div>
+    {% endif %}
+
+    <!-- Options -->
+    <div class="checkbox-group">
+      <h5 style="color: var(--primary-brown); margin-bottom: 1rem;">⚙️ Reading Options</h5>
+      <label class="checkbox-item">
+        <input type="checkbox" name="want_to_read" {% if request.form.want_to_read %}checked{% endif %}>
+        <span>📋 Want to Read (Add to reading list)</span>
+      </label>
+      <label class="checkbox-item">
+        <input type="checkbox" name="library_only" {% if request.form.library_only %}checked{% endif %}>
+        <span>📚 Library Only (Reference/Collection)</span>
+      </label>
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit" name="add" class="btn-submit">
+      <i class="fas fa-plus-circle"></i> Add Book to Library
+    </button>
+  </form>
+
+  <!-- Back Link -->
+  <div style="text-align: center; margin-top: 1rem;">
+    <a href="{{ url_for('main.index') }}" class="back-link">
+      <i class="fas fa-arrow-left"></i> Back to Library
+    </a>
   </div>
-  {% endif %}
+</div>
 
-  <label>
-    <input type="checkbox" name="want_to_read" {% if request.form.want_to_read %}checked{% endif %}>
-    Want to Read
-  </label><br>
-
-  <label>
-    <input type="checkbox" name="library_only" {% if request.form.library_only %}checked{% endif %}>
-    Add to Library Only (not for reading)
-  </label><br>
-
-  <input type="submit" name="add" value="Add Book">
-</form>
-
-<a href="{{ url_for('main.index') }}">Back to list</a>
-
-<!-- QuaggaJS -->
-<script src="https://unpkg.com/@ericblade/quagga2@1.2.6/dist/quagga.min.js"></script>
+<!-- QuaggaJS (local file) -->
+<script src="{{ url_for('static', filename='quagga.min.js') }}"></script>
 <script>
 let quaggaStarted = false;
+let lastScanTime = 0;
+const SCAN_COOLDOWN = 2000;
+
+function isValidISBN(code) {
+  const cleanCode = code.replace(/[-\s]/g, '');
+  
+  if (cleanCode.length === 10 || cleanCode.length === 13) {
+    if (cleanCode.length === 13) {
+      return cleanCode.startsWith('978') || cleanCode.startsWith('979');
+    }
+    return /^\d{9}[\dX]$/i.test(cleanCode);
+  }
+  
+  return false;
+}
 
 function startScanner() {
   const scannerDiv = document.getElementById('scanner');
+  const stopBtn = document.getElementById('stopBtn');
+  
   scannerDiv.style.display = 'block';
+  stopBtn.style.display = 'inline-block';
 
   if (quaggaStarted) {
     Quagga.stop();
@@ -69,35 +441,88 @@ function startScanner() {
       type: "LiveStream",
       target: scannerDiv,
       constraints: {
+        width: 400,
+        height: 300,
         facingMode: "environment"
       }
     },
+    locator: {
+      patchSize: "medium",
+      halfSample: true
+    },
+    numOfWorkers: 2,
+    frequency: 10,
     decoder: {
-      readers: ["ean_reader", "ean_8_reader", "upc_reader", "upc_e_reader", "code_39_reader"]
-    }
+      readers: [
+        "ean_reader",
+        "ean_8_reader", 
+        "ean_5_reader",
+        "ean_2_reader",
+        "upc_reader",
+        "upc_e_reader",
+        "code_39_reader",
+        "code_128_reader",
+        "i2of5_reader"
+      ]
+    },
+    locate: true
   }, function(err) {
     if (err) {
-      alert("Error starting scanner: " + err);
+      console.error("QuaggaJS init error:", err);
+      alert("Error starting scanner: " + err.message);
       scannerDiv.style.display = 'none';
+      stopBtn.style.display = 'none';
       return;
     }
+    
+    console.log("QuaggaJS initialized successfully");
     Quagga.start();
     quaggaStarted = true;
   });
 
   Quagga.offDetected();
+  
   Quagga.onDetected(function(result) {
+    const now = Date.now();
+    
+    if (now - lastScanTime < SCAN_COOLDOWN) {
+      return;
+    }
+    
     if (result && result.codeResult && result.codeResult.code) {
       const code = result.codeResult.code;
-      if (code.length === 13 && code.startsWith("978")) {
+      console.log("Detected code:", code, "Format:", result.codeResult.format);
+      
+      if (isValidISBN(code)) {
+        console.log("Valid ISBN detected:", code);
         document.getElementById('isbn').value = code;
-        Quagga.stop();
-        quaggaStarted = false;
-        scannerDiv.style.display = 'none';
-        Quagga.offDetected();
+        stopScanner();
+        lastScanTime = now;
+        
+        setTimeout(() => {
+          document.querySelector('button[name="fetch"]').click();
+        }, 500);
+      } else {
+        console.log("Invalid ISBN format:", code);
       }
     }
   });
 }
+
+function stopScanner() {
+  const scannerDiv = document.getElementById('scanner');
+  const stopBtn = document.getElementById('stopBtn');
+  
+  if (quaggaStarted) {
+    Quagga.stop();
+    quaggaStarted = false;
+  }
+  
+  scannerDiv.style.display = 'none';
+  stopBtn.style.display = 'none';
+  Quagga.offDetected();
+}
+
+window.addEventListener('beforeunload', stopScanner);
 </script>
 {% endblock %}
