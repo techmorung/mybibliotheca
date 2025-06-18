@@ -30,6 +30,9 @@ class User(UserMixin, db.Model):
     password_must_change = db.Column(db.Boolean, default=False)
     password_changed_at = db.Column(db.DateTime, nullable=True)
     
+    # Reading streak offset
+    reading_streak_offset = db.Column(db.Integer, default=0)
+    
     # Relationships
     books = db.relationship('Book', backref='user', lazy=True, cascade='all, delete-orphan')
     
@@ -130,6 +133,11 @@ class User(UserMixin, db.Model):
         self.failed_login_attempts = 0
         self.locked_until = None
         db.session.commit()
+    
+    def get_reading_streak(self):
+        """Get the user's current reading streak with their personal offset"""
+        from app.utils import calculate_reading_streak
+        return calculate_reading_streak(self.id, self.reading_streak_offset)
     
     def __repr__(self):
         return f'<User {self.username}>'

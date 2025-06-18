@@ -64,7 +64,8 @@ def check_if_migrations_needed(inspector):
     if 'user' in existing_tables:
         columns = [column['name'] for column in inspector.get_columns('user')]
         user_fields = ['failed_login_attempts', 'locked_until', 'last_login', 
-                      'share_current_reading', 'share_reading_activity', 'share_library']
+                      'share_current_reading', 'share_reading_activity', 'share_library',
+                      'reading_streak_offset']  # Add the streak offset field
         missing_user_fields = [field for field in user_fields if field not in columns]
         if missing_user_fields:
             migrations_needed.append(f"user_security_privacy: {missing_user_fields}")
@@ -111,7 +112,20 @@ def run_security_privacy_migration(inspector, db_engine):
     except Exception as e:
         print(f"⚠️  Security/privacy migration failed: {e}")
 
-
+def add_streak_offset_column(inspector, engine):
+    """Add reading_streak_offset column to users table"""
+    try:
+        columns = [column['name'] for column in inspector.get_columns('user')]
+        if 'reading_streak_offset' not in columns:
+            print("🔄 Adding reading_streak_offset column to user table...")
+            with engine.connect() as conn:
+                conn.execute(text("ALTER TABLE user ADD COLUMN reading_streak_offset INTEGER DEFAULT 0"))
+                conn.commit()
+            print("✅ reading_streak_offset column added successfully")
+        else:
+            print("✅ reading_streak_offset column already exists")
+    except Exception as e:
+        print(f"⚠️  Error adding reading_streak_offset column: {e}")
 
 def assign_existing_books_to_admin():
     """Assign existing books without user_id to the admin user"""
@@ -163,18 +177,17 @@ def create_app():
     login_manager.login_message_category = 'info'
     csrf.init_app(app)
 
-    # Handle database migrations with backup
+    # DATABASE MIGRATION SECTION
     with app.app_context():
-        # Get database path from config (directory already ensured by config.py)
-        db_path = app.config.get('DATABASE_PATH')
+        db_path = app.config.get('SQLALCHEMY_DATABASE_URI', '').replace('sqlite:///', '')
         
+        # Create inspector for checking database schema
         inspector = inspect(db.engine)
         
-        # Check if migrations are needed before creating backup
-        migrations_needed, migration_details = check_if_migrations_needed(inspector)
+        # Check if migrations are needed BEFORE running any queries
+        migrations_needed, migration_list = check_if_migrations_needed(inspector)
         
         if migrations_needed:
-            print(f"🔄 Migrations needed: {migration_details}")
             print("🔄 Creating database backup before migration...")
             backup_path = backup_database(db_path)
             if backup_path:
@@ -197,14 +210,26 @@ def create_app():
                 print("🔄 Adding user authentication tables...")
                 db.create_all()
                 print("✅ User tables created. Setup required on first visit.")
-            
-            # Only assign orphaned books AFTER user table exists and if admin users exist
-            if 'user' in inspector.get_table_names() and User.query.filter_by(is_admin=True).count() > 0:
-                print("📚 Checking for orphaned books...")
-                assign_existing_books_to_admin()
+            else:
+                # CRITICAL: Add streak offset column FIRST before any User queries
+                add_streak_offset_column(inspector, db.engine)
+                
+                # Refresh inspector after adding column
+                inspector = inspect(db.engine)
             
             # Run security/privacy field migration
             run_security_privacy_migration(inspector, db.engine)
+            
+            # Only assign orphaned books AFTER user table exists and columns are added
+            if 'user' in inspector.get_table_names():
+                try:
+                    # Now it's safe to query User model
+                    admin_users = User.query.filter_by(is_admin=True).count()
+                    if admin_users > 0:
+                        print("📚 Checking for orphaned books...")
+                        assign_existing_books_to_admin()
+                except Exception as e:
+                    print(f"⚠️  Error checking for admin users: {e}")
             
             # Check for new columns in book table
             if 'book' in existing_tables:
@@ -225,8 +250,11 @@ def create_app():
                                 raise e
                         
                         # Assign books to admin after adding user_id column (only if admin exists)
-                        if User.query.filter_by(is_admin=True).count() > 0:
-                            assign_existing_books_to_admin()
+                        try:
+                            if User.query.filter_by(is_admin=True).count() > 0:
+                                assign_existing_books_to_admin()
+                        except Exception as e:
+                            print(f"⚠️  Error assigning books to admin: {e}")
                     
                     # Check for other missing columns
                     new_columns = ['description', 'published_date', 'page_count', 'categories', 
@@ -285,17 +313,20 @@ def create_app():
                         
                         # Assign reading logs to admin user if needed
                         if 'user_id' in missing_reading_log_columns:
-                            admin_user = User.query.filter_by(is_admin=True).first()
-                            if admin_user:
-                                from .models import ReadingLog
-                                unassigned_logs = ReadingLog.query.filter_by(user_id=None).all()
-                                if unassigned_logs:
-                                    print(f"🔄 Assigning {len(unassigned_logs)} reading logs to admin user...")
-                                    for log in unassigned_logs:
-                                        log.user_id = admin_user.id
-                                    db.session.commit()
-                                    print("✅ Reading logs assigned to admin user.")
-                                    
+                            try:
+                                admin_user = User.query.filter_by(is_admin=True).first()
+                                if admin_user:
+                                    from .models import ReadingLog
+                                    unassigned_logs = ReadingLog.query.filter_by(user_id=None).all()
+                                    if unassigned_logs:
+                                        print(f"🔄 Assigning {len(unassigned_logs)} reading logs to admin user...")
+                                        for log in unassigned_logs:
+                                            log.user_id = admin_user.id
+                                        db.session.commit()
+                                        print("✅ Reading logs assigned to admin user.")
+                            except Exception as e:
+                                print(f"⚠️  Reading log migration failed: {e}")
+                        
                 except Exception as e:
                     print(f"⚠️  Reading log migration failed: {e}")
         

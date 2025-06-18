@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField
-from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, IntegerField
+from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError, Optional, NumberRange
 from .models import User
 
 def validate_strong_password(form, field):
@@ -135,3 +135,14 @@ class SetupForm(FlaskForm):
         user = User.query.filter_by(email=email.data).first()
         if user is not None:
             raise ValidationError('Please use a different email address.')
+
+class ReadingStreakForm(FlaskForm):
+    reading_streak_offset = IntegerField(
+        'Reading Streak Offset',
+        validators=[Optional(), NumberRange(min=0, max=10000)],
+        render_kw={
+            'placeholder': '0',
+            'class': 'form-control'
+        }
+    )
+    submit = SubmitField('Update Streak Settings', render_kw={'class': 'btn btn-primary'})

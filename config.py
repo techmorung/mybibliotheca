@@ -43,7 +43,6 @@ class Config:
     
     # Application settings
     TIMEZONE = os.environ.get('TIMEZONE') or 'UTC'
-    READING_STREAK_OFFSET = int(os.environ.get('READING_STREAK_OFFSET', 0))
     
     # Authentication settings
     REMEMBER_COOKIE_DURATION = 86400 * 7  # 7 days

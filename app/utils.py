@@ -99,37 +99,77 @@ def get_google_books_cover(isbn, fetch_title_author=False):
 def format_date(date):
     return date.strftime("%Y-%m-%d") if date else None
 
-def get_reading_streak(timezone):
-    # Get all unique dates with a reading log, sorted descending
+def calculate_reading_streak(user_id, streak_offset=0):
+    """
+    Calculate reading streak for a specific user with foolproof logic
+    """
+    # Get all unique dates with reading logs for this user, sorted descending
     dates = (
-        ReadingLog.query.with_entities(ReadingLog.date)
+        ReadingLog.query
+        .filter_by(user_id=user_id)
+        .with_entities(ReadingLog.date)
         .distinct()
         .order_by(ReadingLog.date.desc())
         .all()
     )
-    dates = [d[0] for d in dates]
-
-    streak_offset = current_app.config.get('READING_STREAK_OFFSET', 0)
+    
     if not dates:
         return streak_offset
-
-    # Use the configured timezone for "today"
-    now_ca = datetime.now(timezone)
-    today = now_ca.date()
-
-    # Ensure the most recent date matches today
-    if dates[0] != today:
+    
+    # Convert to list of date objects
+    log_dates = [d[0] for d in dates if d[0] is not None]
+    
+    if not log_dates:
         return streak_offset
+    
+    # Sort in descending order (most recent first)
+    log_dates.sort(reverse=True)
+    
+    today = date.today()
     streak = 0
-    streak = 1  # Start with the first day logged
-    for i in range(1, len(dates)):
-        # Check if the current date is exactly one day after the previous date
-        if (dates[i] - dates[i - 1]).days == 1:
+    
+    # Check if there's a log for today or yesterday
+    # (allow for timezone differences and late logging)
+    most_recent = log_dates[0]
+    days_since_recent = (today - most_recent).days
+    
+    # If the most recent log is more than 1 day old, streak is broken
+    if days_since_recent > 1:
+        return streak_offset
+    
+    # Start counting the streak
+    current_date = most_recent
+    
+    for log_date in log_dates:
+        # If this date continues the streak (same day or previous day)
+        if log_date == current_date:
             streak += 1
+            current_date = current_date - timedelta(days=1)
         else:
-            break  # Stop counting if a day is missed
-
+            # Check if there's a gap
+            days_gap = (current_date - log_date).days
+            if days_gap == 0:
+                # Same date, skip (already counted)
+                continue
+            elif days_gap == 1:
+                # Previous day, continue streak
+                streak += 1
+                current_date = log_date - timedelta(days=1)
+            else:
+                # Gap found, streak ends
+                break
+    
     return streak + streak_offset
+
+def get_reading_streak(timezone=None):
+    """
+    Legacy function for backward compatibility
+    Uses current user's streak calculation
+    """
+    from flask_login import current_user
+    if not current_user.is_authenticated:
+        return 0
+    return current_user.get_reading_streak()
 
 def generate_month_review_image(books, month, year):
     import calendar

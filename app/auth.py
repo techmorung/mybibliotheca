@@ -1,8 +1,12 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, session
-from flask_login import login_user, logout_user, current_user, login_required
-from .models import User, db
+from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask_login import login_user, logout_user, login_required, current_user
+from werkzeug.security import check_password_hash, generate_password_hash
+from app.models import User, db
+from wtforms import IntegerField, SubmitField
+from wtforms.validators import Optional, NumberRange
+from flask_wtf import FlaskForm
 from .forms import (LoginForm, RegistrationForm, UserProfileForm, ChangePasswordForm,
-                   PrivacySettingsForm, ForcedPasswordChangeForm, SetupForm)
+                   PrivacySettingsForm, ForcedPasswordChangeForm, SetupForm, ReadingStreakForm)
 from .debug_utils import debug_route, debug_auth, debug_csrf, debug_session
 from datetime import datetime, timezone
 
@@ -281,21 +285,30 @@ def debug_info():
 @auth.route('/privacy_settings', methods=['GET', 'POST'])
 @login_required
 def privacy_settings():
+    from app.forms import PrivacySettingsForm, ReadingStreakForm
+    
     form = PrivacySettingsForm()
+    streak_form = ReadingStreakForm()
+    
+    # Populate forms with current values
+    if request.method == 'GET':
+        form.share_current_reading.data = current_user.share_current_reading
+        form.share_reading_activity.data = current_user.share_reading_activity
+        form.share_library.data = current_user.share_library
+        streak_form.reading_streak_offset.data = current_user.reading_streak_offset
     
     if form.validate_on_submit():
         current_user.share_current_reading = form.share_current_reading.data
         current_user.share_reading_activity = form.share_reading_activity.data
         current_user.share_library = form.share_library.data
         db.session.commit()
-        flash('Your privacy settings have been updated.', 'success')
+        flash('Privacy settings updated successfully!', 'success')
         return redirect(url_for('auth.privacy_settings'))
-    elif request.method == 'GET':
-        form.share_current_reading.data = current_user.share_current_reading
-        form.share_reading_activity.data = current_user.share_reading_activity
-        form.share_library.data = current_user.share_library
     
-    return render_template('auth/privacy_settings.html', title='Privacy Settings', form=form)
+    return render_template('auth/privacy_settings.html', 
+                         title='Privacy Settings', 
+                         form=form, 
+                         streak_form=streak_form)
 
 @auth.route('/my_activity')
 @login_required
@@ -332,3 +345,17 @@ def my_activity():
                          books_this_year=books_this_year,
                          recent_books=recent_books,
                          recent_logs=recent_logs)
+
+@auth.route('/update_streak_settings', methods=['POST'])
+@login_required
+def update_streak_settings():
+    form = ReadingStreakForm()
+    
+    if form.validate_on_submit():
+        current_user.reading_streak_offset = form.reading_streak_offset.data or 0
+        db.session.commit()
+        flash('Reading streak settings updated successfully!', 'success')
+    else:
+        flash('Error updating streak settings. Please try again.', 'danger')
+    
+    return redirect(url_for('auth.privacy_settings'))

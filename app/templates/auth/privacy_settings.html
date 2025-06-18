@@ -90,4 +90,42 @@
         </div>
     </div>
 </div>
+
+<div class="row">
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="bi bi-calendar-check"></i> Reading Streak Settings
+                </h6>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('auth.update_streak_settings') }}">
+                    {{ streak_form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ streak_form.reading_streak_offset.label(class="form-label") }}
+                        {{ streak_form.reading_streak_offset }}
+                        <div class="form-text">
+                            Add extra days to your reading streak. This can account for days you read but forgot to log, 
+                            or give yourself a head start. Current streak: <strong>{{ current_user.get_reading_streak() }}</strong> days.
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <small>
+                            <i class="bi bi-info-circle"></i>
+                            <strong>How it works:</strong> Your streak is calculated from your reading logs, 
+                            then this offset is added. The offset doesn't replace your actual reading activity.
+                        </small>
+                    </div>
+                    
+                    <div class="d-grid">
+                        {{ streak_form.submit }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

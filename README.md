@@ -51,12 +51,10 @@ docker run -d \
   -p 5054:5054 \
   -v /path/to/data:/app/data \
   -e TIMEZONE=America/Chicago \
-  -e READING_STREAK_OFFSET=0 \
   -e WORKERS=6 \
   --restart unless-stopped \
   pickles4evaaaa/bibliotheca:latest
-
-````
+```
 
 ---
 
@@ -78,9 +76,7 @@ services:
     restart: unless-stopped
     environment:
       - TIMEZONE=America/Chicago  # ✅ Set your preferred timezone here
-      - READING_STREAK_OFFSET=0  # Reading streak offset
       - WORKERS=6  # Change to the number of Gunicorn workers you want
-
 ```
 
 Then run:
@@ -95,7 +91,6 @@ docker compose up -d
 | `SECRET_KEY`          | Flask secret key for sessions             | `auto-generated`          |
 | `SECURITY_PASSWORD_SALT` | Password hashing salt               | `auto-generated`          |
 | `TIMEZONE`            | Sets the app's timezone                    | `America/Chicago`         |
-| `READING_STREAK_OFFSET` | Adjusts reading day streak | `0` (starts from 0, add offset if migrating)    |
 | `WORKERS`             | Number of Gunicorn worker processes        | `6`                      |
 
 ---

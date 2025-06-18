@@ -53,7 +53,8 @@ def fetch_book(isbn):
 def index():
     books = Book.query.filter_by(user_id=current_user.id).all()
     timezone = pytz.timezone(current_app.config.get('TIMEZONE', 'UTC'))
-    streak = get_reading_streak(timezone)
+    # Use the new user-specific streak calculation
+    streak = current_user.get_reading_streak()
     for book in books:
         if not book.uid:
             book.uid = secrets.token_urlsafe(6)
@@ -64,7 +65,7 @@ def index():
         b for b in books
         if not b.finish_date and not getattr(b, 'want_to_read', False) and not getattr(b, 'library_only', False)
     ]
-    finished = sorted(
+    finished_books = sorted(
         [b for b in books if b.finish_date],
         key=lambda b: b.finish_date or '',
         reverse=True
@@ -72,7 +73,7 @@ def index():
     return render_template(
         'index.html',
         currently_reading=currently_reading,
-        finished=finished,
+        finished=finished_books,  # Changed from finished_books to finished
         want_to_read=want_to_read,
         streak=streak
     )
