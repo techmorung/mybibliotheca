@@ -41,11 +41,12 @@ jobs:
           webhook-url: ${{ secrets.NEW_COMMIT }}
           username: "GitHub Commits Bot"
           avatar-url: "https://github.githubassets.com/images/modules/logos_page/Octocat.png"
-          embed-title: "🚀 New Commit: ${{ github.event.head_commit.message }}"
+          embed-title: "🚀 New Commit"
           embed-description: |
-            **Author:** ${{ github.event.head_commit.author.name }}
-            **Repository:** ${{ github.repository }}
-            **Branch:** `${{ github.ref_name }}`
+            **💬 Message:** ${{ github.event.head_commit.message }}
+            **👤 Author:** ${{ github.event.head_commit.author.name }}
+            **📦 Repository:** ${{ github.repository }}
+            **🌿 Branch:** `${{ github.ref_name }}`
             
             **📊 Changes Summary:**
             ✅ **Added:** ${{ steps.changes.outputs.added }} file(s)
