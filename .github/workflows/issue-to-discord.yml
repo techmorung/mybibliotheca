@@ -8,27 +8,18 @@ jobs:
   discord:
     runs-on: ubuntu-latest
     steps:
-      - name: Notify Discord
-        uses: benc-uk/discohook-action@v1
+      - name: Send Discord Notification
+        uses: tsickert/discord-webhook@v5.3.0
         with:
-          # your Discord webhook URL stored as a secret
-          webhook: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          username: GitHub Issue Bot
-          avatar_url: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
-          embeds: |
-            [
-              {
-                "title": "${{ github.event.issue.title }}",
-                "url": "${{ github.event.issue.html_url }}",
-                "description": ${{ toJson(github.event.issue.body) }},
-                "color": 15158332,
-                "fields": [
-                  {
-                    "name": "Opened by",
-                    "value": "${{ github.event.issue.user.login }}",
-                    "inline": true
-                  }
-                ],
-                "timestamp": "${{ github.event.issue.created_at }}"
-              }
-            ]
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          username: "GitHub Issues Bot"
+          avatar-url: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+          embed-title: "🐛 New Issue: ${{ github.event.issue.title }}"
+          embed-description: |
+            **Opened by:** ${{ github.event.issue.user.login }}
+            **Repository:** ${{ github.repository }}
+            
+            ${{ github.event.issue.body }}
+          embed-url: ${{ github.event.issue.html_url }}
+          embed-color: 15158332
+          embed-timestamp: ${{ github.event.issue.created_at }} 
