@@ -1,0 +1,30 @@
+name: 🚀 Notify Discord on New Commits
+
+on:
+  push:
+    branches: [ main, master, develop ]
+
+jobs:
+  discord:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Discord Notification
+        uses: tsickert/discord-webhook@v5.3.0
+        with:
+          webhook-url: ${{ secrets.NEW_COMMIT }}
+          username: "GitHub Commits Bot"
+          avatar-url: "https://github.githubassets.com/images/modules/logos_page/Octocat.png"
+          embed-title: "🚀 New Commit to ${{ github.ref_name }}"
+          embed-description: |
+            **Message:** ${{ github.event.head_commit.message }}
+            **Author:** ${{ github.event.head_commit.author.name }}
+            **Repository:** ${{ github.repository }}
+            
+            **Files Changed:**
+            ✅ Added: ${{ github.event.head_commit.added | length }}
+            ✏️ Modified: ${{ github.event.head_commit.modified | length }}
+            ❌ Removed: ${{ github.event.head_commit.removed | length }}
+          embed-url: ${{ github.event.head_commit.url }}
+          embed-color: 3066993
+          embed-timestamp: ${{ github.event.head_commit.timestamp }}
+          embed-footer-text: "SHA: ${{ github.event.head_commit.id }}"
