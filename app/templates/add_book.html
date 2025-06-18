@@ -291,10 +291,10 @@
       <h4 style="color: var(--primary-brown); margin-bottom: 1rem;">📱 Barcode Scanner</h4>
       <div class="scanner-buttons">
         <button type="button" class="btn-scan" onclick="startScanner()">
-          <i class="fas fa-camera"></i> Scan Barcode
+          📷 Scan Barcode
         </button>
         <button type="button" class="btn-stop" onclick="stopScanner()" style="display: none;" id="stopBtn">
-          <i class="fas fa-stop"></i> Stop Scanner
+          ⏹️ Stop Scanner
         </button>
       </div>
       
@@ -329,7 +329,7 @@
              type="text" pattern="[\d-]+" title="Enter a valid ISBN (digits and hyphens only)"
              placeholder="Enter ISBN or scan barcode above">
       <button name="fetch" value="1" type="submit" class="btn-fetch mt-2">
-        <i class="fas fa-search"></i> Fetch Book Data
+        🔍 Fetch Book Data
       </button>
     </div>
 
@@ -391,14 +391,14 @@
 
     <!-- Submit Button -->
     <button type="submit" name="add" class="btn-submit">
-      <i class="fas fa-plus-circle"></i> Add Book to Library
+      ➕ Add Book to Library
     </button>
   </form>
 
   <!-- Back Link -->
   <div style="text-align: center; margin-top: 1rem;">
     <a href="{{ url_for('main.index') }}" class="back-link">
-      <i class="fas fa-arrow-left"></i> Back to Library
+      ⬅️ Back to Library
     </a>
   </div>
 </div>
