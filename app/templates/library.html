@@ -1,6 +1,7 @@
 {% extends "base.html" %}
-{% block title %}My Library - MyBibliotheca{% endblock %}
+{% block title %}MyBibliotheca - Your Personal Library{% endblock %}
 {% block content %}
+<!-- Update your CSS styles -->
 <style>
   :root {
     --primary-brown: #8B4513;
@@ -12,6 +13,250 @@
     --hover-shadow: rgba(0,0,0,0.2);
   }
 
+  .container {
+    max-width: 75vw !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+  }
+
+  .book-cover-shelf {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* Changed from cover to contain for full view */
+    transition: transform 0.3s ease;
+    /* Enhanced image rendering for crisp images */
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    image-rendering: pixelated;
+    /* GPU acceleration for smooth transforms */
+    transform: translateZ(0);
+    will-change: transform;
+    backface-visibility: hidden;
+  }
+
+  /* Responsive grid layout with smaller cards */
+  .books-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Reduced from 280px */
+    gap: 16px; /* Reduced gap */
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    transform: translateZ(0);
+    will-change: contents;
+  }
+
+  .book-card {
+    background: var(--cream);
+    border: 2px solid var(--light-brown); /* Reduced border width */
+    border-radius: 8px; /* Smaller border radius */
+    padding: 0.5rem; /* Reduced padding */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-height: 280px; /* Reduced from 400px */
+    max-width: 200px; /* Reduced from 350px */
+    margin: 0 auto;
+    transform: translateZ(0);
+    will-change: transform, box-shadow, border-color;
+    backface-visibility: hidden;
+  }
+
+  .book-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(145deg, transparent 0%, rgba(218, 165, 32, 0.1) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    transform: translateZ(0);
+  }
+
+  .book-card:hover {
+    transform: translateY(-4px) scale(1.02) translateZ(0); /* Reduced hover lift */
+    box-shadow: 0 8px 20px var(--hover-shadow); /* Reduced shadow */
+    border-color: var(--gold);
+  }
+
+  .book-card:hover::before {
+    opacity: 1;
+  }
+
+  .book-cover-wrapper {
+    position: relative;
+    margin-bottom: 0.5rem; /* Reduced margin */
+    border-radius: 6px; /* Smaller border radius */
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2); /* Reduced shadow */
+    aspect-ratio: 3/4; /* Maintain book proportions */
+    width: 100%;
+    height: 160px; /* Fixed height for consistency */
+    transform: translateZ(0);
+    will-change: transform;
+    background: #f8f8f8; /* Light background for missing covers */
+  }
+
+  .book-cover-wrapper a {
+    display: block;
+    width: 100%;
+    height: 100%;
+    text-decoration: none;
+  }
+  
+  .book-cover-wrapper a:hover {
+    text-decoration: none;
+  }
+  
+  .book-cover-wrapper:hover {
+    transform: scale(1.01) translateZ(0); /* Reduced hover scale */
+    transition: transform 0.3s ease;
+  }
+  
+  .book-cover-wrapper::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0);
+    transition: background 0.3s ease;
+    pointer-events: none;
+    border-radius: 6px;
+    transform: translateZ(0);
+  }
+  
+  .book-cover-wrapper:hover::after {
+    background: rgba(0, 0, 0, 0.05); /* Lighter overlay */
+  }
+
+  .book-card:hover .book-cover-shelf {
+    transform: scale(1.02) translateZ(0); /* Reduced hover scale */
+  }
+
+  .book-info {
+    position: relative;
+    z-index: 2;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 0.25rem 0; /* Reduced padding */
+  }
+
+  .book-title {
+    font-size: 0.75rem; /* Reduced font size */
+    font-weight: 700;
+    margin-bottom: 0.25rem; /* Reduced margin */
+    line-height: 1.2;
+    color: var(--primary-brown);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    height: 2.4em; /* Fixed height for consistent layout */
+  }
+
+  .book-title a {
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.3s ease;
+  }
+
+  .book-title a:hover {
+    color: var(--gold);
+  }
+
+  .book-author {
+    font-size: 0.65rem; /* Reduced font size */
+    color: #666;
+    margin-bottom: 0.5rem;
+    font-style: italic;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .book-meta {
+    margin-bottom: 0.5rem; /* Reduced margin */
+    flex-grow: 1;
+  }
+
+  .category-badges {
+    margin-bottom: 0.25rem; /* Reduced margin */
+  }
+
+  .category-badge {
+    background: var(--light-brown) !important;
+    color: var(--primary-brown) !important;
+    font-size: clamp(0.4rem, 0.7vw, 0.55rem) !important; /* More responsive scaling */
+    padding: clamp(1px, 0.2vw, 2px) clamp(2px, 0.4vw, 4px) !important; /* Adaptive padding */
+    border-radius: clamp(4px, 0.8vw, 8px) !important; /* Adaptive border radius */
+    margin: clamp(0.5px, 0.1vw, 1px); /* Adaptive margin */
+    border: 1px solid var(--primary-brown);
+    display: inline-block;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .rating-display {
+    color: var(--gold);
+    font-size: 0.6rem; /* Reduced font size */
+    font-weight: 500;
+  }
+
+  .book-badges {
+    margin-top: auto;
+    padding-top: clamp(0.2rem, 0.4vw, 0.4rem); /* Adaptive padding */
+    display: flex;
+    flex-wrap: wrap;
+    gap: clamp(0.1rem, 0.2vw, 0.25rem); /* Adaptive gap */
+    justify-content: center;
+    align-items: center;
+  }
+
+  .status-badge {
+    font-size: clamp(0.45rem, 0.8vw, 0.65rem) !important; /* More responsive scaling */
+    padding: clamp(1px, 0.3vw, 3px) clamp(3px, 0.6vw, 6px) !important; /* Adaptive padding */
+    border-radius: clamp(6px, 1vw, 12px) !important; /* Adaptive border radius */
+    font-weight: 600 !important;
+    text-transform: uppercase;
+    letter-spacing: clamp(0.2px, 0.1vw, 0.4px); /* Adaptive letter spacing */
+    line-height: 1;
+    white-space: nowrap;
+    display: inline-block;
+    min-width: fit-content;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: clamp(2rem, 8vw, 4rem) 2rem;
+    color: #666;
+    grid-column: 1 / -1;
+  }
+
+  .empty-state-icon {
+    font-size: clamp(2rem, 8vw, 4rem);
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+
+  .empty-state h3 {
+    font-size: clamp(1.25rem, 3vw, 1.75rem);
+  }
+
+  .empty-state p {
+    font-size: clamp(0.9rem, 2vw, 1rem);
+  }
+
+  /* Keep existing styles for other elements... */
   .library-header {
     background: linear-gradient(135deg, var(--primary-brown) 0%, var(--light-brown) 100%);
     color: white;
@@ -20,6 +265,7 @@
     border-radius: 15px;
     position: relative;
     overflow: hidden;
+    transform: translateZ(0);
   }
 
   .library-header::before {
@@ -42,10 +288,6 @@
     z-index: 1;
   }
 
-  .library-header p {
-    font-size: clamp(0.9rem, 2vw, 1.25rem);
-  }
-
   .library-stats {
     background: var(--warm-white);
     border: 2px solid var(--light-brown);
@@ -53,6 +295,7 @@
     padding: 1rem;
     margin-bottom: 1.5rem;
     box-shadow: 0 4px 8px var(--shadow);
+    transform: translateZ(0);
   }
 
   .filter-section {
@@ -63,6 +306,7 @@
     margin-bottom: 2rem;
     box-shadow: 0 6px 20px var(--shadow);
     position: relative;
+    transform: translateZ(0);
   }
 
   .filter-section::before {
@@ -88,9 +332,11 @@
   .bookshelf-container {
     background: linear-gradient(145deg, #f0e6d2 0%, #e6dcc6 100%);
     border-radius: 20px;
-    padding: clamp(1rem, 3vw, 2rem);
+    padding: clamp(1rem, 2vw, 2rem);
     box-shadow: inset 0 4px 8px rgba(0,0,0,0.1);
     position: relative;
+    width: 100%;
+    transform: translateZ(0);
   }
 
   .bookshelf-container::before {
@@ -105,198 +351,32 @@
     border-radius: 20px;
   }
 
-  /* 3 books per row grid layout */
-  .books-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: clamp(1rem, 2vw, 1.5rem);
-    position: relative;
-    z-index: 1;
-  }
-
-  .book-card {
-    background: var(--cream);
-    border: 3px solid var(--light-brown);
-    border-radius: 12px;
-    padding: clamp(0.75rem, 1.5vw, 1rem);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    min-height: clamp(350px, 35vw, 450px);
-  }
-
-  .book-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(145deg, transparent 0%, rgba(218, 165, 32, 0.1) 100%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  .book-card:hover {
-    transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 12px 30px var(--hover-shadow);
-    border-color: var(--gold);
-  }
-
-  .book-card:hover::before {
-    opacity: 1;
-  }
-
-  .book-cover-wrapper {
-    position: relative;
-    margin-bottom: 1rem;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    aspect-ratio: 3/4;
-    width: 100%;
-  }
-
-  .book-cover-shelf {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.3s ease;
-  }
-
-  .book-card:hover .book-cover-shelf {
-    transform: scale(1.05);
-  }
-
-  .book-info {
-    position: relative;
-    z-index: 2;
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .book-title {
-    font-size: clamp(0.9rem, 1.8vw, 1.1rem);
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    line-height: 1.3;
-    color: var(--primary-brown);
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  .book-title a {
-    text-decoration: none;
-    color: inherit;
-    transition: color 0.3s ease;
-  }
-
-  .book-title a:hover {
-    color: var(--gold);
-  }
-
-  .book-author {
-    font-size: clamp(0.8rem, 1.4vw, 0.9rem);
-    color: #666;
-    margin-bottom: 0.75rem;
-    font-style: italic;
-  }
-
-  .book-meta {
-    margin-bottom: 1rem;
-    flex-grow: 1;
-  }
-
-  .category-badges {
-    margin-bottom: 0.5rem;
-  }
-
-  .category-badge {
-    background: var(--light-brown) !important;
-    color: var(--primary-brown) !important;
-    font-size: clamp(0.6rem, 1.1vw, 0.7rem);
-    padding: 2px 6px;
-    border-radius: 12px;
-    margin: 2px;
-    border: 1px solid var(--primary-brown);
-  }
-
-  .rating-display {
-    color: var(--gold);
-    font-size: clamp(0.7rem, 1.3vw, 0.85rem);
-    font-weight: 500;
-  }
-
-  .book-badges {
-    margin-top: auto;
-    padding-top: 0.5rem;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.25rem;
-    justify-content: center;
-  }
-
-  .status-badge {
-    font-size: clamp(0.6rem, 1.1vw, 0.75rem) !important;
-    padding: 4px 8px !important;
-    border-radius: 15px !important;
-    font-weight: 600 !important;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .empty-state {
-    text-align: center;
-    padding: clamp(2rem, 8vw, 4rem) 2rem;
-    color: #666;
-    grid-column: 1 / -1;
-  }
-
-  .empty-state-icon {
-    font-size: clamp(2rem, 8vw, 4rem);
-    margin-bottom: 1rem;
-    opacity: 0.5;
-  }
-
-  .empty-state h3 {
-    font-size: clamp(1.25rem, 3vw, 1.75rem);
-  }
-
-  .empty-state p {
-    font-size: clamp(0.9rem, 2vw, 1rem);
-  }
-
   .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(clamp(120px, 15vw, 150px), 1fr));
-    gap: clamp(0.5rem, 2vw, 1rem);
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
     margin-bottom: 1rem;
+    transform: translateZ(0);
   }
 
   .stat-item {
     text-align: center;
-    padding: clamp(0.5rem, 1.5vw, 0.75rem);
+    padding: clamp(0.5rem, 1vw, 0.75rem);
     background: var(--cream);
     border-radius: 8px;
     border: 1px solid var(--light-brown);
+    transform: translateZ(0);
   }
 
   .stat-number {
-    font-size: clamp(1rem, 3vw, 1.5rem);
+    font-size: clamp(1rem, 2vw, 1.5rem);
     font-weight: 700;
     color: var(--primary-brown);
     display: block;
   }
 
   .stat-label {
-    font-size: clamp(0.6rem, 1.2vw, 0.8rem);
+    font-size: clamp(0.6rem, 1vw, 0.8rem);
     color: #666;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -305,9 +385,9 @@
   .form-control, .form-select {
     border: 2px solid var(--light-brown);
     border-radius: 8px;
-    padding: clamp(0.4rem, 1vw, 0.5rem) clamp(0.6rem, 1.5vw, 0.75rem);
+    padding: clamp(0.4rem, 0.8vw, 0.5rem) clamp(0.6rem, 1vw, 0.75rem);
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    font-size: clamp(0.8rem, 1.5vw, 0.9rem);
+    font-size: clamp(0.8rem, 1vw, 0.9rem);
   }
 
   .form-control:focus, .form-select:focus {
@@ -316,7 +396,7 @@
   }
 
   .form-label {
-    font-size: clamp(0.8rem, 1.5vw, 0.9rem);
+    font-size: clamp(0.8rem, 1vw, 0.9rem);
   }
 
   .btn-primary {
@@ -325,14 +405,16 @@
     border-radius: 8px;
     font-weight: 600;
     transition: all 0.3s ease;
-    font-size: clamp(0.8rem, 1.5vw, 0.9rem);
-    padding: clamp(0.4rem, 1vw, 0.5rem) clamp(0.6rem, 1.5vw, 0.75rem);
+    font-size: clamp(0.8rem, 1vw, 0.9rem);
+    padding: clamp(0.4rem, 0.8vw, 0.5rem) clamp(0.6rem, 1vw, 0.75rem);
+    transform: translateZ(0);
+    will-change: transform, background-color, border-color;
   }
 
   .btn-primary:hover {
     background: var(--gold);
     border-color: var(--gold);
-    transform: translateY(-2px);
+    transform: translateY(-2px) translateZ(0);
   }
 
   .btn-secondary {
@@ -341,31 +423,184 @@
     color: var(--primary-brown);
     border-radius: 8px;
     font-weight: 600;
-    font-size: clamp(0.7rem, 1.3vw, 0.8rem);
+    font-size: clamp(0.7rem, 0.9vw, 0.8rem);
   }
 
-  /* Responsive form layout */
   .filter-form {
     display: grid;
-    grid-template-columns: 
-      2fr 
-      repeat(3, minmax(120px, 1fr)) 
-      minmax(80px, auto);
-    gap: clamp(0.5rem, 2vw, 1rem);
+    grid-template-columns: 2fr repeat(3, minmax(140px, 1fr)) minmax(100px, auto);
+    gap: 16px;
     align-items: end;
   }
 
-  /* Responsive breakpoints for 3-column layout */
-  @media (max-width: 1024px) {
+  .reading-streak-stat {
+    background: linear-gradient(135deg, #28a745, #20c997) !important;
+    color: white !important;
+    border: 2px solid #20c997 !important;
+  }
+  
+  .reading-streak-stat .stat-number {
+    color: white !important;
+  }
+  
+  .reading-streak-stat .stat-label {
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+  
+  .reading-streak-stat small {
+    color: rgba(255, 255, 255, 0.7) !important;
+    font-size: 0.6rem !important;
+    display: block !important;
+    margin-top: 2px !important;
+  }
+
+  .sort-info {
+    background: rgba(139, 69, 19, 0.1);
+    border: 1px solid var(--light-brown);
+    border-radius: 8px;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  
+  .sort-info small {
+    font-size: clamp(0.75rem, 1vw, 0.85rem) !important;
+  }
+
+  .pagination-controls {
+    background: var(--warm-white);
+    border: 1px solid var(--light-brown);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
+    transform: translateZ(0);
+  }
+  
+  .pagination-info {
+    min-width: 200px;
+  }
+  
+  .pagination-buttons {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .book-card.hidden {
+    display: none !important;
+  }
+  
+  .pagination-controls .btn {
+    transition: all 0.3s ease;
+    transform: translateZ(0);
+    will-change: transform;
+  }
+  
+  .pagination-controls .btn:hover:not(:disabled) {
+    transform: translateY(-1px) translateZ(0);
+  }
+
+  /* Responsive breakpoints with smaller cards */
+  @media (min-width: 1920px) {
     .books-grid {
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Increased for large screens */
+      gap: 20px;
+    }
+    
+    .book-card {
+      min-height: 300px;
+      max-width: 220px;
+    }
+    
+    .book-cover-wrapper {
+      height: 180px;
+    }
+
+    .status-badge {
+      font-size: 0.6rem !important;
+      padding: 3px 6px !important;
+      border-radius: 10px !important;
+      letter-spacing: 0.3px;
+    }
+  }
+
+  @media (min-width: 1400px) and (max-width: 1919px) {
+    .books-grid {
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 18px;
+    }
+    
+    .book-card {
+      min-height: 290px;
+      max-width: 210px;
+    }
+    
+    .book-cover-wrapper {
+      height: 170px;
+    }
+
+    .status-badge {
+      font-size: 0.55rem !important;
+      padding: 2px 5px !important;
+      border-radius: 9px !important;
+      letter-spacing: 0.25px;
+    }
+  }
+
+  @media (min-width: 1024px) and (max-width: 1399px) {
+    .books-grid {
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
+    }
+    
+    .book-card {
+      min-height: 280px;
+      max-width: 200px;
+    }
+    
+    .book-cover-wrapper {
+      height: 160px;
+    }
+
+    .status-badge {
+      font-size: 0.5rem !important;
+      padding: 2px 5px !important;
+      border-radius: 8px !important;
+      letter-spacing: 0.2px;
+    }
+  }
+
+  @media (max-width: 1023px) {
+    .books-grid {
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 14px;
+    }
+    
+    .book-card {
+      min-height: 260px;
+      max-width: 180px;
+    }
+    
+    .book-cover-wrapper {
+      height: 140px;
+    }
+
+    .status-badge {
+      font-size: 0.48rem !important;
+      padding: 2px 4px !important;
+      border-radius: 7px !important;
+      letter-spacing: 0.15px;
     }
   }
 
   @media (max-width: 768px) {
+    .container {
+      width: 98% !important;
+    }
+    
     .filter-form {
       grid-template-columns: 1fr;
-      gap: 1rem;
+      gap: 16px;
     }
     
     .filter-section::before {
@@ -378,29 +613,92 @@
     }
     
     .books-grid {
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+    }
+    
+    .book-card {
+      min-height: 240px;
+      max-width: 160px;
+    }
+    
+    .book-cover-wrapper {
+      height: 120px;
+    }
+
+    .status-badge {
+      font-size: 0.45rem !important;
+      padding: 1px 4px !important;
+      border-radius: 6px !important;
+      letter-spacing: 0.1px;
+    }
+    
+    .pagination-controls .d-flex {
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .pagination-info {
+      min-width: auto;
+      text-align: center;
+    }
+    
+    .pagination-buttons {
+      justify-content: center;
+      gap: 8px;
     }
   }
 
   @media (max-width: 480px) {
     .books-grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 10px;
     }
     
     .book-card {
-      min-height: 320px;
+      min-height: 220px;
+      max-width: 140px;
+    }
+    
+    .book-cover-wrapper {
+      height: 100px;
+    }
+    
+    .book-title {
+      font-size: 0.7rem;
+    }
+    
+    .book-author {
+      font-size: 0.6rem;
+    }
+
+    .status-badge {
+      font-size: 0.4rem !important;
+      padding: 1px 3px !important;
+      border-radius: 5px !important;
+      letter-spacing: 0.05px;
+    }
+
+    .book-badges {
+      gap: 0.08rem;
+      padding-top: 0.15rem;
     }
   }
 
-  /* Large screen adjustments */
-  @media (min-width: 1400px) {
-    .books-grid {
-      grid-template-columns: repeat(3, 1fr);
-      max-width: 1200px;
-      margin: 0 auto;
+  @media (max-width: 360px) {
+    .status-badge {
+      font-size: 0.38rem !important;
+      padding: 1px 2px !important;
+      border-radius: 4px !important;
+      letter-spacing: 0;
     }
   }
 </style>
+
+<!-- Library Header -->
+<div class="library-header text-center">
+  <h1>📚 MyBibliotheca</h1>
+</div>
 
 <!-- Library Statistics -->
 <div class="library-stats">
@@ -415,11 +713,15 @@
     </div>
     <div class="stat-item">
       <span class="stat-number">{{ books|rejectattr('finish_date')|rejectattr('want_to_read')|rejectattr('library_only')|list|length }}</span>
-      <span class="stat-label">Reading</span>
+      <span class="stat-label">Currently Reading</span>
     </div>
     <div class="stat-item">
       <span class="stat-number">{{ books|selectattr('want_to_read')|list|length }}</span>
       <span class="stat-label">Want to Read</span>
+    </div>
+    <div class="stat-item reading-streak-stat">
+      <span class="stat-number">{{ current_user.get_reading_streak() }}</span>
+      <span class="stat-label">Day Streak 🔥</span>
     </div>
   </div>
 </div>
@@ -471,7 +773,7 @@
     </div>
   </form>
   <div class="mt-3 text-center">
-    <a href="{{ url_for('main.library') }}" class="btn btn-secondary btn-sm me-3">Clear All Filters</a>
+    <a href="{{ url_for('main.index') }}" class="btn btn-secondary btn-sm me-3">Clear All Filters</a>
     <span class="text-muted fw-semibold">Showing {{ books|length }} book(s)</span>
   </div>
 </div>
@@ -479,15 +781,22 @@
 <!-- Books Grid -->
 <div class="bookshelf-container">
   {% if books %}
-    <div class="books-grid">
+    <div class="books-grid" id="books-grid">
       {% for book in books %}
-        <div class="book-card">
+        <div class="book-card" data-index="{{ loop.index0 }}">
           <div class="book-cover-wrapper">
-            <img 
-              src="{{ book.cover_url or url_for('static', filename='bookshelf.png') }}"
-              class="book-cover-shelf"
-              alt="{{ book.title }} cover"
-              onerror="this.onerror=null;this.src='{{ url_for('static', filename='bookshelf.png') }}'">
+            <a href="{{ url_for('main.view_book', uid=book.uid) }}">
+              <img 
+                src="{{ book.cover_url or url_for('static', filename='bookshelf.png') }}"
+                {% if book.cover_url %}
+                srcset="{{ book.cover_url }} 1x, {{ book.cover_url.replace('.jpg', '@2x.jpg').replace('.png', '@2x.png') }} 2x"
+                {% endif %}
+                class="book-cover-shelf"
+                alt="{{ book.title }} cover"
+                loading="lazy"
+                decoding="async"
+                onerror="this.onerror=null;this.src='{{ url_for('static', filename='bookshelf.png') }}'">
+            </a>
           </div>
 
           <div class="book-info">
@@ -523,11 +832,11 @@
               {% if book.want_to_read %}
                 <span class="badge bg-info status-badge">Want to Read</span>
               {% elif not book.finish_date and not book.library_only %}
-                <span class="badge bg-warning status-badge">Reading</span>
+                <span class="badge bg-warning status-badge">Currently Reading</span>
               {% elif book.finish_date %}
                 <span class="badge bg-success status-badge">Finished</span>
               {% elif book.library_only %}
-                <span class="badge bg-secondary status-badge">Library</span>
+                <span class="badge bg-secondary status-badge">Library Only</span>
               {% endif %}
             </div>
           </div>
@@ -545,9 +854,166 @@
   {% endif %}
 </div>
 
+<!-- Pagination Controls (bottom) -->
+<div class="pagination-controls mb-3 text-center">
+  <div class="d-flex justify-content-between align-items-center flex-wrap">
+    <div class="pagination-info">
+      <small class="text-muted">
+        Showing <strong><span id="showing-start">1</span>-<span id="showing-end">14</span></strong> 
+        of <strong>{{ books|length }}</strong> books
+      </small>
+    </div>
+    <div class="pagination-buttons">
+      <button id="prev-btn" class="btn btn-outline-secondary btn-sm me-2" disabled>
+        ← Previous
+      </button>
+      <span id="page-info" class="text-muted me-2">Page 1</span>
+      <button id="next-btn" class="btn btn-outline-secondary btn-sm me-3">
+        Next →
+      </button>
+      <button id="show-all-btn" class="btn btn-outline-primary btn-sm">
+        Show All
+      </button>
+    </div>
+  </div>
+</div>
+
 <script>
-// Add some interactive enhancements
+// Enhanced pagination and interactivity
 document.addEventListener('DOMContentLoaded', function() {
+    // Dynamic books per page based on screen width
+    function getBooksPerPage() {
+        const width = window.innerWidth;
+        if (width >= 1920) return 21;      // 3 rows × 7 columns for very large screens
+        if (width >= 1400) return 14;      // 2 rows × 7 columns for large screens  
+        if (width >= 1024) return 14;      // 2 rows × 7 columns for medium screens
+        if (width >= 768) return 10;       // 2 rows × 5 columns for tablets
+        return 8;                          // 2 rows × 4 columns for mobile
+    }
+    
+    let booksPerPage = getBooksPerPage();
+    let currentPage = 1;
+    let showingAll = false;
+    
+    const bookCards = document.querySelectorAll('.book-card');
+    const totalBooks = bookCards.length;
+    let totalPages = Math.ceil(totalBooks / booksPerPage);
+    
+    // Update pagination when window resizes
+    window.addEventListener('resize', function() {
+        const newBooksPerPage = getBooksPerPage();
+        if (newBooksPerPage !== booksPerPage) {
+            booksPerPage = newBooksPerPage;
+            totalPages = Math.ceil(totalBooks / booksPerPage);
+            if (!showingAll) {
+                currentPage = 1; // Reset to first page
+                updatePagination();
+            }
+        }
+    });
+    
+    // Get pagination elements
+    const prevBtns = document.querySelectorAll('#prev-btn, #prev-btn-bottom');
+    const nextBtns = document.querySelectorAll('#next-btn, #next-btn-bottom');
+    const showAllBtns = document.querySelectorAll('#show-all-btn, #show-all-btn-bottom');
+    const pageInfos = document.querySelectorAll('#page-info, #page-info-bottom');
+    const showingStart = document.getElementById('showing-start');
+    const showingEnd = document.getElementById('showing-end');
+    
+    function updatePagination() {
+        if (showingAll) {
+            // Show all books
+            bookCards.forEach(card => {
+                card.classList.remove('hidden');
+                card.style.animationDelay = `${parseInt(card.dataset.index) * 0.02}s`;
+                card.style.animation = 'fadeInUp 0.4s ease forwards';
+            });
+            
+            // Update UI
+            showingStart.textContent = '1';
+            showingEnd.textContent = totalBooks;
+            pageInfos.forEach(info => info.textContent = 'All Pages');
+            
+            // Update buttons
+            prevBtns.forEach(btn => btn.style.display = 'none');
+            nextBtns.forEach(btn => btn.style.display = 'none');
+            showAllBtns.forEach(btn => {
+                btn.textContent = 'Show Pages';
+                btn.classList.remove('btn-outline-primary');
+                btn.classList.add('btn-outline-secondary');
+            });
+            
+        } else {
+            // Show paginated books
+            const startIndex = (currentPage - 1) * booksPerPage;
+            const endIndex = Math.min(startIndex + booksPerPage, totalBooks);
+            
+            bookCards.forEach((card, index) => {
+                if (index >= startIndex && index < endIndex) {
+                    card.classList.remove('hidden');
+                    card.style.animationDelay = `${(index - startIndex) * 0.05}s`;
+                    card.style.animation = 'fadeInUp 0.6s ease forwards';
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+            
+            // Update UI
+            showingStart.textContent = startIndex + 1;
+            showingEnd.textContent = endIndex;
+            pageInfos.forEach(info => info.textContent = `Page ${currentPage} of ${totalPages}`);
+            
+            // Update buttons
+            prevBtns.forEach(btn => {
+                btn.style.display = 'inline-block';
+                btn.disabled = currentPage === 1;
+            });
+            nextBtns.forEach(btn => {
+                btn.style.display = 'inline-block';
+                btn.disabled = currentPage === totalPages;
+            });
+            showAllBtns.forEach(btn => {
+                btn.textContent = 'Show All';
+                btn.classList.remove('btn-outline-secondary');
+                btn.classList.add('btn-outline-primary');
+            });
+        }
+    }
+    
+    // Previous page
+    prevBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                updatePagination();
+                document.querySelector('.books-grid').scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    });
+    
+    // Next page
+    nextBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                updatePagination();
+                document.querySelector('.books-grid').scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    });
+    
+    // Show all / Show pages toggle
+    showAllBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            showingAll = !showingAll;
+            if (!showingAll) {
+                currentPage = 1; // Reset to first page
+            }
+            updatePagination();
+            document.querySelector('.books-grid').scrollIntoView({ behavior: 'smooth' });
+        });
+    });
+    
     // Auto-submit form on filter change
     const filterSelects = document.querySelectorAll('#category, #publisher, #language');
     filterSelects.forEach(select => {
@@ -555,12 +1021,35 @@ document.addEventListener('DOMContentLoaded', function() {
             this.form.submit();
         });
     });
-
-    // Add loading animation to book cards
-    const bookCards = document.querySelectorAll('.book-card');
-    bookCards.forEach((card, index) => {
-        card.style.animationDelay = `${index * 0.1}s`;
-        card.style.animation = 'fadeInUp 0.6s ease forwards';
+    
+    // Initialize pagination
+    if (totalBooks > booksPerPage) {
+        updatePagination();
+    } else {
+        // Hide pagination if not needed
+        document.querySelectorAll('.pagination-controls').forEach(control => {
+            control.style.display = 'none';
+        });
+        // Show all books
+        bookCards.forEach((card, index) => {
+            card.style.animationDelay = `${index * 0.05}s`;
+            card.style.animation = 'fadeInUp 0.6s ease forwards';
+        });
+    }
+    
+    // Keyboard navigation
+    document.addEventListener('keydown', function(e) {
+        if (!showingAll && totalBooks > booksPerPage) {
+            if (e.key === 'ArrowLeft' && currentPage > 1) {
+                currentPage--;
+                updatePagination();
+                document.querySelector('.books-grid').scrollIntoView({ behavior: 'smooth' });
+            } else if (e.key === 'ArrowRight' && currentPage < totalPages) {
+                currentPage++;
+                updatePagination();
+                document.querySelector('.books-grid').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
     });
 });
 

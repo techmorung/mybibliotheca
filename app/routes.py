@@ -9,6 +9,7 @@ from io import BytesIO
 import pytz
 import csv # Ensure csv is imported
 import calendar
+from sqlalchemy import or_
 
 bp = Blueprint('main', __name__)
 
@@ -51,32 +52,88 @@ def fetch_book(isbn):
 @bp.route('/')
 @login_required
 def index():
-    books = Book.query.filter_by(user_id=current_user.id).all()
-    timezone = pytz.timezone(current_app.config.get('TIMEZONE', 'UTC'))
-    # Use the new user-specific streak calculation
-    streak = current_user.get_reading_streak()
-    for book in books:
-        if not book.uid:
-            book.uid = secrets.token_urlsafe(6)
-            db.session.commit()
-    want_to_read = [b for b in books if getattr(b, 'want_to_read', False)]
-    # Exclude library_only books from currently_reading
-    currently_reading = [
-        b for b in books
-        if not b.finish_date and not getattr(b, 'want_to_read', False) and not getattr(b, 'library_only', False)
-    ]
-    finished_books = sorted(
-        [b for b in books if b.finish_date],
-        key=lambda b: b.finish_date or '',
-        reverse=True
-    )
-    return render_template(
-        'index.html',
-        currently_reading=currently_reading,
-        finished=finished_books,  # Changed from finished_books to finished
-        want_to_read=want_to_read,
-        streak=streak
-    )
+    # This now serves the library functionality as the homepage
+    search = request.args.get('search', '').strip()
+    category = request.args.get('category', '').strip()
+    publisher = request.args.get('publisher', '').strip()
+    language = request.args.get('language', '').strip()
+    
+    # Start with all user's books
+    query = Book.query.filter_by(user_id=current_user.id)
+    
+    # Apply search filter
+    if search:
+        search_filter = or_(
+            Book.title.ilike(f'%{search}%'),
+            Book.author.ilike(f'%{search}%'),
+            Book.description.ilike(f'%{search}%'),
+            Book.categories.ilike(f'%{search}%'),
+            Book.publisher.ilike(f'%{search}%')
+        )
+        query = query.filter(search_filter)
+    
+    # Apply category filter
+    if category:
+        query = query.filter(Book.categories.ilike(f'%{category}%'))
+    
+    # Apply publisher filter
+    if publisher:
+        query = query.filter(Book.publisher == publisher)
+    
+    # Apply language filter
+    if language:
+        query = query.filter(Book.language == language)
+    
+    # Get filtered books
+    all_filtered_books = query.all()
+    
+    # Sort books by reading status priority
+    def get_sort_priority(book):
+        # Currently Reading = 1 (highest priority)
+        if not book.finish_date and not book.want_to_read and not book.library_only:
+            return 1
+        # Want to Read = 2
+        elif book.want_to_read:
+            return 2
+        # Finished = 3
+        elif book.finish_date:
+            return 3
+        # Library Only = 4 (lowest priority)
+        else:
+            return 4
+    
+    # Sort by priority first, then by title
+    books = sorted(all_filtered_books, key=lambda book: (get_sort_priority(book), book.title.lower()))
+    
+    # Get all books for filter options (unfiltered)
+    all_books = Book.query.filter_by(user_id=current_user.id).all()
+    
+    # Extract unique values for filters
+    categories = sorted(set([
+        cat.strip() for book in all_books 
+        if book.categories 
+        for cat in book.categories.split(',')
+    ]))
+    
+    publishers = sorted(set([
+        book.publisher for book in all_books 
+        if book.publisher and book.publisher.strip()
+    ]))
+    
+    languages = sorted(set([
+        book.language for book in all_books 
+        if book.language and book.language.strip()
+    ]))
+    
+    return render_template('library.html',
+                         books=books,
+                         categories=categories,
+                         publishers=publishers,
+                         languages=languages,
+                         current_search=search,
+                         current_category=category,
+                         current_publisher=publisher,
+                         current_language=language)
 
 @bp.route('/add', methods=['GET', 'POST'])
 @login_required
