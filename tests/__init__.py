@@ -1,1 +1,1 @@
-# Tests for Bibliotheca v2.0 Authentication System
+# Tests for MyBibliotheca v2.0 Authentication System

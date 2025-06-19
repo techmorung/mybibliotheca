@@ -1,10 +1,10 @@
-# 🔐 Bibliotheca V2.0 Authentication Guide
+# 🔐 MyBibliotheca V2.0 Authentication Guide
 
-This guide covers the multi-user authentication system introduced in Bibliotheca V2.0.
+This guide covers the multi-user authentication system introduced in MyBibliotheca V2.0.
 
 ## Overview
 
-Bibliotheca V2.0 introduces a complete multi-user authentication system with:
+MyBibliotheca V2.0 introduces a complete multi-user authentication system with:
 - User registration and login
 - Password security with hashing
 - Admin user management
@@ -16,14 +16,14 @@ Bibliotheca V2.0 introduces a complete multi-user authentication system with:
 
 ### First Time Setup
 
-When you first run Bibliotheca V2.0, you'll complete a secure setup process:
+When you first run MyBibliotheca V2.0, you'll complete a secure setup process:
 
 1. **Navigate to the application** in your web browser
 2. **Complete the setup form** to create your administrator account:
    - Choose a unique admin username
    - Provide a valid email address
    - Create a strong password meeting security requirements
-3. **Begin using Bibliotheca** immediately after setup
+3. **Begin using MyBibliotheca** immediately after setup
 
 ✅ **Secure by Design**: No default passwords or credentials - you're in complete control of your admin account!
 
@@ -81,10 +81,10 @@ If you lose admin access, reset the admin password using the Docker container:
 
 ```bash
 # Reset admin password interactively
-docker exec -it bibliotheca python3 admin_tools.py reset-admin-password
+docker exec -it MyBibliotheca python3 admin_tools.py reset-admin-password
 
 # Or reset with a specific password
-docker exec -it bibliotheca python3 admin_tools.py reset-admin-password --password newpassword123
+docker exec -it MyBibliotheca python3 admin_tools.py reset-admin-password --password newpassword123
 ```
 
 #### Password Security Requirements
@@ -129,7 +129,7 @@ Currently, authentication is web-based only. API authentication is planned for P
 
 ## Migration from V1.x
 
-When upgrading from Bibliotheca V1.x:
+When upgrading from MyBibliotheca V1.x:
 
 1. **Automatic Migration**: All existing books and reading logs are assigned to the default admin user
 2. **Data Preservation**: No data is lost during migration
@@ -151,13 +151,13 @@ The migration script (`migrate_to_v2.py`) automatically:
 ```yaml
 version: '3.8'
 services:
-  bibliotheca:
-    image: pickles4evaaaa/bibliotheca:latest
-    container_name: bibliotheca
+  MyBibliotheca:
+    image: pickles4evaaaa/MyBibliotheca:latest
+    container_name: MyBibliotheca
     ports:
       - "5054:5054"
     volumes:
-      - bibliotheca_data:/app/data
+      - MyBibliotheca_data:/app/data
     environment:
       # Authentication settings
       - SECRET_KEY=your-super-secret-key-change-this
@@ -169,7 +169,7 @@ services:
     restart: unless-stopped
 
 volumes:
-  bibliotheca_data:
+  MyBibliotheca_data:
 ```
 
 ### Security Best Practices
@@ -218,7 +218,7 @@ FLASK_DEBUG=true
 
 For authentication-related issues:
 1. Check this documentation first
-2. Review Docker logs: `docker logs bibliotheca`
+2. Review Docker logs: `docker logs MyBibliotheca`
 3. Open an issue on GitHub with detailed error information
 
 ---

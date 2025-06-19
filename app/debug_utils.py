@@ -1,5 +1,5 @@
 """
-Debug utilities for Bibliotheca
+Debug utilities for MyBibliotheca
 Provides comprehensive debugging capabilities for troubleshooting
 """
 
@@ -11,7 +11,7 @@ from flask_login import current_user
 from functools import wraps
 
 # Configure debug logger
-debug_logger = logging.getLogger('bibliotheca.debug')
+debug_logger = logging.getLogger('MyBibliotheca.debug')
 
 def setup_debug_logging():
     """Setup debug logging based on configuration"""
@@ -205,7 +205,7 @@ def print_debug_banner():
         return
         
     print("=" * 60)
-    print("🐛 BIBLIOTHECA DEBUG MODE ENABLED")
+    print("🐛 MyBibliotheca DEBUG MODE ENABLED")
     print("=" * 60)
     print(f"CSRF Debug: {current_app.config.get('DEBUG_CSRF', False)}")
     print(f"Session Debug: {current_app.config.get('DEBUG_SESSION', False)}")

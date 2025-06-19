@@ -1,4 +1,4 @@
-# Rate Limiting Implementation for Bibliotheca
+# Rate Limiting Implementation for MyBibliotheca
 
 ## Overview
 This document describes the rate limiting implementation added to address issue #23: preventing API throttling during bulk imports.

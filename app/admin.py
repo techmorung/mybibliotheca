@@ -1,5 +1,5 @@
 """
-Admin functionality for Bibliotheca multi-user platform
+Admin functionality for MyBibliotheca multi-user platform
 Provides admin-only decorators, middleware, and management functions
 """
 

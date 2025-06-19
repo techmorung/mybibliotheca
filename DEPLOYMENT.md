@@ -1,6 +1,6 @@
 # 🚀 Production Deployment Guide
 
-This guide covers deploying Bibliotheca in a production environment with security best practices.
+This guide covers deploying MyBibliotheca in a production environment with security best practices.
 
 ## Prerequisites
 
@@ -15,8 +15,8 @@ This guide covers deploying Bibliotheca in a production environment with securit
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/bibliotheca.git
-cd bibliotheca
+git clone https://github.com/your-username/MyBibliotheca.git
+cd MyBibliotheca
 
 # Create environment configuration
 cp .env.example .env
@@ -67,7 +67,7 @@ docker compose up -d
 
 # Verify deployment
 docker compose ps
-docker compose logs bibliotheca
+docker compose logs MyBibliotheca
 ```
 
 ### 4. Initial Admin Setup
@@ -107,13 +107,13 @@ server {
 ```yaml
 version: '3.8'
 services:
-  bibliotheca:
+  MyBibliotheca:
     # ... existing configuration ...
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.bibliotheca.rule=Host(`your-domain.com`)"
-      - "traefik.http.routers.bibliotheca.tls.certresolver=letsencrypt"
-      - "traefik.http.services.bibliotheca.loadbalancer.server.port=5054"
+      - "traefik.http.routers.MyBibliotheca.rule=Host(`your-domain.com`)"
+      - "traefik.http.routers.MyBibliotheca.tls.certresolver=letsencrypt"
+      - "traefik.http.services.MyBibliotheca.loadbalancer.server.port=5054"
 ```
 
 ## Production Security Hardening
@@ -156,7 +156,7 @@ The default docker-compose.yml includes health checks:
 ### Log Management
 ```bash
 # View application logs
-docker compose logs -f bibliotheca
+docker compose logs -f MyBibliotheca
 
 # Rotate logs to prevent disk space issues
 docker system prune -f
@@ -167,9 +167,9 @@ docker system prune -f
 # Create backup script (backup.sh)
 #!/bin/bash
 DATE=$(date +%Y%m%d_%H%M%S)
-docker run --rm -v bibliotheca_bibliotheca_data:/source:ro \
+docker run --rm -v MyBibliotheca_MyBibliotheca_data:/source:ro \
   -v $(pwd)/backups:/backup alpine \
-  tar czf /backup/bibliotheca_backup_$DATE.tar.gz -C /source .
+  tar czf /backup/MyBibliotheca_backup_$DATE.tar.gz -C /source .
 
 # Make executable and add to cron
 chmod +x backup.sh
@@ -195,7 +195,7 @@ docker compose up -d
 **Application won't start:**
 - Check environment variables in `.env`
 - Verify SECRET_KEY and SECURITY_PASSWORD_SALT are set
-- Check Docker logs: `docker compose logs bibliotheca`
+- Check Docker logs: `docker compose logs MyBibliotheca`
 
 **Permission denied errors:**
 - Ensure data directory has correct permissions
