@@ -1,6 +1,6 @@
 # 📚 MyBibliotheca
 
-**MyBibliotheca** is a self-hosted personal library and reading tracker web app built with Flask. It lets you log, organize, and visualize your reading journey. Add books by ISBN, track reading progress, log daily reading, and generate monthly wrap-up images of your finished titles.
+**MyBibliotheca** is a self-hosted personal library and reading-tracker—your open-source alternative to Goodreads, StoryGraph, and Fable! It lets you log, organize, and visualize your reading journey. Add books by ISBN, track reading progress, log daily reading, and generate monthly wrap-up images of your finished titles.
 
 
 🆕 **Multi-User Features**: Multi-user authentication, user data isolation, admin management, and secure password handling.
