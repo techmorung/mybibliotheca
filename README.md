@@ -47,7 +47,7 @@ MyBibliotheca can be run completely in Docker — no need to install Python or d
 
 ```bash
 docker run -d \
-  --name MyBibliotheca \
+  --name mybibliotheca \
   -p 5054:5054 \
   -v /path/to/data:/app/data \
   -e TIMEZONE=America/Chicago \
@@ -67,8 +67,8 @@ version: '3.8'
 
 services:
   MyBibliotheca:
-    image: pickles4evaaaa/MyBibliotheca:latest
-    container_name: MyBibliotheca
+    image: pickles4evaaaa/mybibliotheca:latest
+    container_name: mybibliotheca
     ports:
       - "5054:5054"
     volumes:
@@ -122,16 +122,16 @@ Use the built-in admin tools for password management:
 
 ```bash
 # Reset admin password (interactive)
-docker exec -it MyBibliotheca python3 admin_tools.py reset-admin-password
+docker exec -it mybibliotheca python3 admin_tools.py reset-admin-password
 
 # Create additional admin user
-docker exec -it MyBibliotheca python3 admin_tools.py create-admin
+docker exec -it mybibliotheca python3 admin_tools.py create-admin
 
 # List all users
-docker exec -it MyBibliotheca python3 admin_tools.py list-users
+docker exec -it mybibliotheca python3 admin_tools.py list-users
 
 # System statistics
-docker exec -it MyBibliotheca python3 admin_tools.py system-stats
+docker exec -it mybibliotheca python3 admin_tools.py system-stats
 ```
 
 ### Migration from V1.x
@@ -165,8 +165,8 @@ Existing single-user installations are **automatically migrated** to multi-user:
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/pickles4evaaaa/MyBibliotheca.git
-   cd MyBibliotheca
+   git clone https://github.com/pickles4evaaaa/mybibliotheca.git
+   cd mybibliotheca
    ```
 
 2. **Create a Python virtual environment**
