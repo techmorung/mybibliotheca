@@ -22,23 +22,24 @@
   .book-cover-shelf {
     width: 100%;
     height: 100%;
-    object-fit: contain; /* Changed from cover to contain for full view */
-    transition: transform 0.3s ease;
-    /* Enhanced image rendering for crisp images */
+    object-fit: contain;
+    transition: transform 0.3s ease, opacity 0.3s ease;
     image-rendering: -webkit-optimize-contrast;
     image-rendering: crisp-edges;
     image-rendering: pixelated;
-    /* GPU acceleration for smooth transforms */
     transform: translateZ(0);
     will-change: transform;
     backface-visibility: hidden;
+    background: #f8f8f8;
+    border-radius: 4px;
+    opacity: 1; /* Always visible by default */
   }
 
-  /* Responsive grid layout with smaller cards */
+  /* Enhanced mobile-first responsive grid */
   .books-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Reduced from 280px */
-    gap: 16px; /* Reduced gap */
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
     position: relative;
     z-index: 1;
     width: 100%;
@@ -48,9 +49,9 @@
 
   .book-card {
     background: var(--cream);
-    border: 2px solid var(--light-brown); /* Reduced border width */
-    border-radius: 8px; /* Smaller border radius */
-    padding: 0.5rem; /* Reduced padding */
+    border: 2px solid var(--light-brown);
+    border-radius: 8px;
+    padding: 0.5rem;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
@@ -58,8 +59,8 @@
     display: flex;
     flex-direction: column;
     width: 100%;
-    min-height: 280px; /* Reduced from 400px */
-    max-width: 200px; /* Reduced from 350px */
+    min-height: 280px;
+    max-width: 200px;
     margin: 0 auto;
     transform: translateZ(0);
     will-change: transform, box-shadow, border-color;
@@ -80,8 +81,8 @@
   }
 
   .book-card:hover {
-    transform: translateY(-4px) scale(1.02) translateZ(0); /* Reduced hover lift */
-    box-shadow: 0 8px 20px var(--hover-shadow); /* Reduced shadow */
+    transform: translateY(-4px) scale(1.02) translateZ(0);
+    box-shadow: 0 8px 20px var(--hover-shadow);
     border-color: var(--gold);
   }
 
@@ -91,54 +92,46 @@
 
   .book-cover-wrapper {
     position: relative;
-    margin-bottom: 0.5rem; /* Reduced margin */
-    border-radius: 6px; /* Smaller border radius */
+    margin-bottom: 0.5rem;
+    border-radius: 6px;
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2); /* Reduced shadow */
-    aspect-ratio: 3/4; /* Maintain book proportions */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    aspect-ratio: 3/4;
     width: 100%;
-    height: 160px; /* Fixed height for consistency */
+    height: 160px;
     transform: translateZ(0);
     will-change: transform;
-    background: #f8f8f8; /* Light background for missing covers */
+    background: #f8f8f8; /* Light background for loading state */
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
-  .book-cover-wrapper a {
-    display: block;
-    width: 100%;
-    height: 100%;
-    text-decoration: none;
-  }
-  
-  .book-cover-wrapper a:hover {
-    text-decoration: none;
-  }
-  
-  .book-cover-wrapper:hover {
-    transform: scale(1.01) translateZ(0); /* Reduced hover scale */
-    transition: transform 0.3s ease;
-  }
-  
-  .book-cover-wrapper::after {
-    content: '';
+  /* Loading state for images */
+  .book-cover-wrapper::before {
+    content: '📚';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0);
-    transition: background 0.3s ease;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2rem;
+    opacity: 0.3;
+    z-index: 1;
     pointer-events: none;
-    border-radius: 6px;
-    transform: translateZ(0);
   }
-  
-  .book-cover-wrapper:hover::after {
-    background: rgba(0, 0, 0, 0.05); /* Lighter overlay */
+
+  .book-cover-wrapper img {
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Hide placeholder when image loads */
+  .book-cover-wrapper img:not([src=""]):not([src*="bookshelf.png"]) + ::before {
+    display: none;
   }
 
   .book-card:hover .book-cover-shelf {
-    transform: scale(1.02) translateZ(0); /* Reduced hover scale */
+    transform: scale(1.02) translateZ(0);
   }
 
   .book-info {
@@ -147,20 +140,20 @@
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    padding: 0.25rem 0; /* Reduced padding */
+    padding: 0.25rem 0;
   }
 
   .book-title {
-    font-size: 0.75rem; /* Reduced font size */
+    font-size: 0.75rem;
     font-weight: 700;
-    margin-bottom: 0.25rem; /* Reduced margin */
+    margin-bottom: 0.25rem;
     line-height: 1.2;
     color: var(--primary-brown);
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    height: 2.4em; /* Fixed height for consistent layout */
+    height: 2.4em;
   }
 
   .book-title a {
@@ -174,7 +167,7 @@
   }
 
   .book-author {
-    font-size: 0.65rem; /* Reduced font size */
+    font-size: 0.65rem;
     color: #666;
     margin-bottom: 0.5rem;
     font-style: italic;
@@ -185,21 +178,21 @@
   }
 
   .book-meta {
-    margin-bottom: 0.5rem; /* Reduced margin */
+    margin-bottom: 0.5rem;
     flex-grow: 1;
   }
 
   .category-badges {
-    margin-bottom: 0.25rem; /* Reduced margin */
+    margin-bottom: 0.25rem;
   }
 
   .category-badge {
     background: var(--light-brown) !important;
     color: var(--primary-brown) !important;
-    font-size: clamp(0.4rem, 0.7vw, 0.55rem) !important; /* More responsive scaling */
-    padding: clamp(1px, 0.2vw, 2px) clamp(2px, 0.4vw, 4px) !important; /* Adaptive padding */
-    border-radius: clamp(4px, 0.8vw, 8px) !important; /* Adaptive border radius */
-    margin: clamp(0.5px, 0.1vw, 1px); /* Adaptive margin */
+    font-size: clamp(0.4rem, 0.7vw, 0.55rem) !important;
+    padding: clamp(1px, 0.2vw, 2px) clamp(2px, 0.4vw, 4px) !important;
+    border-radius: clamp(4px, 0.8vw, 8px) !important;
+    margin: clamp(0.5px, 0.1vw, 1px);
     border: 1px solid var(--primary-brown);
     display: inline-block;
     line-height: 1;
@@ -208,52 +201,31 @@
 
   .rating-display {
     color: var(--gold);
-    font-size: 0.6rem; /* Reduced font size */
+    font-size: 0.6rem;
     font-weight: 500;
   }
 
   .book-badges {
     margin-top: auto;
-    padding-top: clamp(0.2rem, 0.4vw, 0.4rem); /* Adaptive padding */
+    padding-top: clamp(0.2rem, 0.4vw, 0.4rem);
     display: flex;
     flex-wrap: wrap;
-    gap: clamp(0.1rem, 0.2vw, 0.25rem); /* Adaptive gap */
+    gap: clamp(0.1rem, 0.2vw, 0.25rem);
     justify-content: center;
     align-items: center;
   }
 
   .status-badge {
-    font-size: clamp(0.45rem, 0.8vw, 0.65rem) !important; /* More responsive scaling */
-    padding: clamp(1px, 0.3vw, 3px) clamp(3px, 0.6vw, 6px) !important; /* Adaptive padding */
-    border-radius: clamp(6px, 1vw, 12px) !important; /* Adaptive border radius */
+    font-size: clamp(0.45rem, 0.8vw, 0.65rem) !important;
+    padding: clamp(1px, 0.3vw, 3px) clamp(3px, 0.6vw, 6px) !important;
+    border-radius: clamp(6px, 1vw, 12px) !important;
     font-weight: 600 !important;
     text-transform: uppercase;
-    letter-spacing: clamp(0.2px, 0.1vw, 0.4px); /* Adaptive letter spacing */
+    letter-spacing: clamp(0.2px, 0.1vw, 0.4px);
     line-height: 1;
     white-space: nowrap;
     display: inline-block;
     min-width: fit-content;
-  }
-
-  .empty-state {
-    text-align: center;
-    padding: clamp(2rem, 8vw, 4rem) 2rem;
-    color: #666;
-    grid-column: 1 / -1;
-  }
-
-  .empty-state-icon {
-    font-size: clamp(2rem, 8vw, 4rem);
-    margin-bottom: 1rem;
-    opacity: 0.5;
-  }
-
-  .empty-state h3 {
-    font-size: clamp(1.25rem, 3vw, 1.75rem);
-  }
-
-  .empty-state p {
-    font-size: clamp(0.9rem, 2vw, 1rem);
   }
 
   /* Keep existing styles for other elements... */
@@ -454,18 +426,6 @@
     margin-top: 2px !important;
   }
 
-  .sort-info {
-    background: rgba(139, 69, 19, 0.1);
-    border: 1px solid var(--light-brown);
-    border-radius: 8px;
-    padding: 0.75rem;
-    margin-bottom: 1rem;
-  }
-  
-  .sort-info small {
-    font-size: clamp(0.75rem, 1vw, 0.85rem) !important;
-  }
-
   .pagination-controls {
     background: var(--warm-white);
     border: 1px solid var(--light-brown);
@@ -500,10 +460,12 @@
     transform: translateY(-1px) translateZ(0);
   }
 
-  /* Responsive breakpoints with smaller cards */
+  /* MOBILE-FIRST RESPONSIVE DESIGN */
+  
+  /* Large Desktop (1920px+) */
   @media (min-width: 1920px) {
     .books-grid {
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Increased for large screens */
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
       gap: 20px;
     }
     
@@ -522,8 +484,15 @@
       border-radius: 10px !important;
       letter-spacing: 0.3px;
     }
+
+    .category-badge {
+      font-size: 0.52rem !important;
+      padding: 2px 4px !important;
+      border-radius: 7px !important;
+    }
   }
 
+  /* Desktop (1400-1919px) */
   @media (min-width: 1400px) and (max-width: 1919px) {
     .books-grid {
       grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
@@ -545,8 +514,15 @@
       border-radius: 9px !important;
       letter-spacing: 0.25px;
     }
+
+    .category-badge {
+      font-size: 0.48rem !important;
+      padding: 1px 3px !important;
+      border-radius: 6px !important;
+    }
   }
 
+  /* Medium Desktop (1024-1399px) */
   @media (min-width: 1024px) and (max-width: 1399px) {
     .books-grid {
       grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -568,9 +544,20 @@
       border-radius: 8px !important;
       letter-spacing: 0.2px;
     }
+
+    .category-badge {
+      font-size: 0.45rem !important;
+      padding: 1px 3px !important;
+      border-radius: 6px !important;
+    }
   }
 
-  @media (max-width: 1023px) {
+  /* Tablet Landscape (768-1023px) */
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .container {
+      max-width: 95vw !important;
+    }
+
     .books-grid {
       grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
       gap: 14px;
@@ -591,16 +578,46 @@
       border-radius: 7px !important;
       letter-spacing: 0.15px;
     }
+
+    .category-badge {
+      font-size: 0.42rem !important;
+      padding: 1px 3px !important;
+      border-radius: 5px !important;
+    }
+
+    .filter-form {
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
   }
 
-  @media (max-width: 768px) {
+  /* Mobile Landscape & Tablet Portrait (481-767px) */
+  @media (min-width: 481px) and (max-width: 767px) {
     .container {
-      width: 98% !important;
+      max-width: 98vw !important;
+      padding: 0 0.75rem !important;
     }
     
-    .filter-form {
-      grid-template-columns: 1fr;
-      gap: 16px;
+    .library-header {
+      padding: 1.5rem 0;
+      margin-bottom: 1.5rem;
+      border-radius: 10px;
+    }
+
+    .library-stats {
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .filter-section {
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      border-radius: 10px;
     }
     
     .filter-section::before {
@@ -610,6 +627,12 @@
     .filter-title {
       padding-left: 0;
       text-align: center;
+      font-size: 1rem;
+    }
+    
+    .filter-form {
+      grid-template-columns: 1fr;
+      gap: 12px;
     }
     
     .books-grid {
@@ -620,10 +643,20 @@
     .book-card {
       min-height: 240px;
       max-width: 160px;
+      padding: 0.4rem;
     }
     
     .book-cover-wrapper {
       height: 120px;
+      margin-bottom: 0.4rem;
+    }
+
+    .book-title {
+      font-size: 0.68rem;
+    }
+
+    .book-author {
+      font-size: 0.58rem;
     }
 
     .status-badge {
@@ -632,10 +665,20 @@
       border-radius: 6px !important;
       letter-spacing: 0.1px;
     }
+
+    .category-badge {
+      font-size: 0.4rem !important;
+      padding: 1px 2px !important;
+      border-radius: 4px !important;
+    }
     
+    .pagination-controls {
+      padding: 0.75rem;
+    }
+
     .pagination-controls .d-flex {
       flex-direction: column;
-      gap: 16px;
+      gap: 12px;
     }
     
     .pagination-info {
@@ -645,11 +688,85 @@
     
     .pagination-buttons {
       justify-content: center;
-      gap: 8px;
+      gap: 6px;
+    }
+
+    .pagination-buttons .btn {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
     }
   }
 
+  /* Mobile Portrait (320-480px) */
   @media (max-width: 480px) {
+    .container {
+      max-width: 100vw !important;
+      padding: 0 0.5rem !important;
+    }
+
+    .library-header {
+      padding: 1rem 0;
+      margin-bottom: 1rem;
+      border-radius: 8px;
+    }
+
+    .library-header h1 {
+      font-size: 1.25rem;
+    }
+
+    .library-stats {
+      padding: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .stat-item {
+      padding: 0.4rem;
+    }
+
+    .stat-number {
+      font-size: 1rem;
+    }
+
+    .stat-label {
+      font-size: 0.55rem;
+    }
+
+    .filter-section {
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+      border-radius: 8px;
+    }
+
+    .filter-title {
+      font-size: 0.9rem;
+      margin-bottom: 0.75rem;
+    }
+    
+    .filter-form {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .form-control, .form-select {
+      padding: 0.4rem 0.5rem;
+      font-size: 0.8rem;
+    }
+
+    .btn-primary {
+      padding: 0.4rem 0.6rem;
+      font-size: 0.8rem;
+    }
+    
+    .bookshelf-container {
+      padding: 0.75rem;
+      border-radius: 12px;
+    }
+
     .books-grid {
       grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
       gap: 10px;
@@ -658,18 +775,41 @@
     .book-card {
       min-height: 220px;
       max-width: 140px;
+      padding: 0.35rem;
+      border-width: 1px;
     }
     
     .book-cover-wrapper {
       height: 100px;
+      margin-bottom: 0.3rem;
+      border-radius: 4px;
     }
-    
+
+    .book-info {
+      padding: 0.2rem 0;
+    }
+
     .book-title {
-      font-size: 0.7rem;
+      font-size: 0.6rem;
+      margin-bottom: 0.2rem;
+      height: 2.2em;
     }
     
     .book-author {
-      font-size: 0.6rem;
+      font-size: 0.55rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .book-meta {
+      margin-bottom: 0.3rem;
+    }
+
+    .category-badges {
+      margin-bottom: 0.2rem;
+    }
+
+    .rating-display {
+      font-size: 0.5rem;
     }
 
     .status-badge {
@@ -679,18 +819,137 @@
       letter-spacing: 0.05px;
     }
 
+    .category-badge {
+      font-size: 0.38rem !important;
+      padding: 0.5px 2px !important;
+      border-radius: 4px !important;
+    }
+
     .book-badges {
       gap: 0.08rem;
       padding-top: 0.15rem;
     }
+
+    .pagination-controls {
+      padding: 0.5rem;
+      margin: 0.5rem 0;
+    }
+
+    .pagination-controls .d-flex {
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .pagination-buttons .btn {
+      font-size: 0.7rem;
+      padding: 0.2rem 0.4rem;
+    }
+
+    .pagination-info small {
+      font-size: 0.7rem;
+    }
   }
 
+  /* Very Small Mobile (max-width: 360px) */
   @media (max-width: 360px) {
+    .container {
+      padding: 0 0.25rem !important;
+    }
+
+    .books-grid {
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 8px;
+    }
+    
+    .book-card {
+      min-height: 200px;
+      max-width: 120px;
+      padding: 0.25rem;
+    }
+    
+    .book-cover-wrapper {
+      height: 80px;
+    }
+
+    .book-title {
+      font-size: 0.55rem;
+      height: 2em;
+    }
+    
+    .book-author {
+      font-size: 0.5rem;
+    }
+
     .status-badge {
       font-size: 0.38rem !important;
       padding: 1px 2px !important;
       border-radius: 4px !important;
       letter-spacing: 0;
+    }
+
+    .category-badge {
+      font-size: 0.35rem !important;
+      padding: 0.5px 1px !important;
+      border-radius: 3px !important;
+    }
+
+    .rating-display {
+      font-size: 0.45rem;
+    }
+
+    .stats-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .filter-section {
+      padding: 0.5rem;
+    }
+
+    .pagination-buttons .btn {
+      font-size: 0.65rem;
+      padding: 0.15rem 0.3rem;
+    }
+  }
+
+  /* Touch-friendly interactions */
+  @media (hover: none) and (pointer: coarse) {
+    .book-card {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .book-card:active {
+      transform: scale(0.98) translateZ(0);
+    }
+
+    .btn:active {
+      transform: scale(0.95) translateZ(0);
+    }
+
+    /* Larger tap targets for mobile */
+    .pagination-buttons .btn {
+      min-height: 44px;
+      min-width: 44px;
+    }
+
+    .form-control, .form-select {
+      min-height: 44px;
+    }
+  }
+
+  /* Reduce animations on low-end devices */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* High DPI displays optimization */
+  @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .book-cover-shelf {
+      image-rendering: -webkit-optimize-contrast;
     }
   }
 </style>
@@ -787,15 +1046,15 @@
           <div class="book-cover-wrapper">
             <a href="{{ url_for('main.view_book', uid=book.uid) }}">
               <img 
-                src="{{ book.cover_url or url_for('static', filename='bookshelf.png') }}"
-                {% if book.cover_url %}
-                srcset="{{ book.cover_url }} 1x, {{ book.cover_url.replace('.jpg', '@2x.jpg').replace('.png', '@2x.png') }} 2x"
+                src="{{ book.secure_cover_url or url_for('static', filename='bookshelf.png') }}"
+                {% if book.secure_cover_url %}
+                srcset="{{ book.secure_cover_url }} 1x"
                 {% endif %}
                 class="book-cover-shelf"
                 alt="{{ book.title }} cover"
                 loading="lazy"
                 decoding="async"
-                onerror="this.onerror=null;this.src='{{ url_for('static', filename='bookshelf.png') }}'">
+                onerror="this.onerror=null;this.src='{{ url_for('static', filename='bookshelf.png') }}';">
             </a>
           </div>
 
@@ -879,16 +1138,18 @@
 </div>
 
 <script>
-// Enhanced pagination and interactivity
+// Enhanced mobile-optimized pagination and interactivity
 document.addEventListener('DOMContentLoaded', function() {
-    // Dynamic books per page based on screen width
+    // Mobile-optimized books per page
     function getBooksPerPage() {
         const width = window.innerWidth;
-        if (width >= 1920) return 21;      // 3 rows × 7 columns for very large screens
-        if (width >= 1400) return 14;      // 2 rows × 7 columns for large screens  
-        if (width >= 1024) return 14;      // 2 rows × 7 columns for medium screens
-        if (width >= 768) return 10;       // 2 rows × 5 columns for tablets
-        return 8;                          // 2 rows × 4 columns for mobile
+        if (width >= 1920) return 21;      // 3 rows × 7 columns
+        if (width >= 1400) return 14;      // 2 rows × 7 columns  
+        if (width >= 1024) return 14;      // 2 rows × 7 columns
+        if (width >= 768) return 10;       // 2 rows × 5 columns
+        if (width >= 481) return 8;        // 2 rows × 4 columns
+        if (width >= 361) return 6;        // 2 rows × 3 columns
+        return 4;                          // 2 rows × 2 columns for very small screens
     }
     
     let booksPerPage = getBooksPerPage();
@@ -899,17 +1160,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const totalBooks = bookCards.length;
     let totalPages = Math.ceil(totalBooks / booksPerPage);
     
-    // Update pagination when window resizes
+    // Throttled resize handler for better mobile performance
+    let resizeTimeout;
     window.addEventListener('resize', function() {
-        const newBooksPerPage = getBooksPerPage();
-        if (newBooksPerPage !== booksPerPage) {
-            booksPerPage = newBooksPerPage;
-            totalPages = Math.ceil(totalBooks / booksPerPage);
-            if (!showingAll) {
-                currentPage = 1; // Reset to first page
-                updatePagination();
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(function() {
+            const newBooksPerPage = getBooksPerPage();
+            if (newBooksPerPage !== booksPerPage) {
+                booksPerPage = newBooksPerPage;
+                totalPages = Math.ceil(totalBooks / booksPerPage);
+                if (!showingAll) {
+                    currentPage = 1;
+                    updatePagination();
+                }
             }
-        }
+        }, 150); // Throttle to 150ms for better performance
     });
     
     // Get pagination elements
@@ -922,11 +1187,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function updatePagination() {
         if (showingAll) {
-            // Show all books
-            bookCards.forEach(card => {
+            // Show all books with optimized animation delays
+            bookCards.forEach((card, index) => {
                 card.classList.remove('hidden');
-                card.style.animationDelay = `${parseInt(card.dataset.index) * 0.02}s`;
-                card.style.animation = 'fadeInUp 0.4s ease forwards';
+                // Reduce animation delays on mobile for faster loading
+                card.style.animationDelay = `${index * 0.01}s`;
+                card.style.animation = 'fadeInUp 0.3s ease forwards';
             });
             
             // Update UI
@@ -951,8 +1217,9 @@ document.addEventListener('DOMContentLoaded', function() {
             bookCards.forEach((card, index) => {
                 if (index >= startIndex && index < endIndex) {
                     card.classList.remove('hidden');
-                    card.style.animationDelay = `${(index - startIndex) * 0.05}s`;
-                    card.style.animation = 'fadeInUp 0.6s ease forwards';
+                    // Faster animations for mobile
+                    card.style.animationDelay = `${(index - startIndex) * 0.03}s`;
+                    card.style.animation = 'fadeInUp 0.4s ease forwards';
                 } else {
                     card.classList.add('hidden');
                 }
@@ -980,26 +1247,39 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // Touch-friendly navigation
+    function navigatePage(direction) {
+        if (direction === 'prev' && currentPage > 1) {
+            currentPage--;
+            updatePagination();
+            scrollToGrid();
+        } else if (direction === 'next' && currentPage < totalPages) {
+            currentPage++;
+            updatePagination();
+            scrollToGrid();
+        }
+    }
+    
+    function scrollToGrid() {
+        // Smooth scroll with mobile optimization
+        const grid = document.querySelector('.books-grid');
+        if (grid) {
+            grid.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start',
+                inline: 'nearest'
+            });
+        }
+    }
+    
     // Previous page
     prevBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            if (currentPage > 1) {
-                currentPage--;
-                updatePagination();
-                document.querySelector('.books-grid').scrollIntoView({ behavior: 'smooth' });
-            }
-        });
+        btn.addEventListener('click', () => navigatePage('prev'));
     });
     
     // Next page
     nextBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            if (currentPage < totalPages) {
-                currentPage++;
-                updatePagination();
-                document.querySelector('.books-grid').scrollIntoView({ behavior: 'smooth' });
-            }
-        });
+        btn.addEventListener('click', () => navigatePage('next'));
     });
     
     // Show all / Show pages toggle
@@ -1007,17 +1287,19 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.addEventListener('click', () => {
             showingAll = !showingAll;
             if (!showingAll) {
-                currentPage = 1; // Reset to first page
+                currentPage = 1;
             }
             updatePagination();
-            document.querySelector('.books-grid').scrollIntoView({ behavior: 'smooth' });
+            scrollToGrid();
         });
     });
     
-    // Auto-submit form on filter change
+    // Mobile-optimized form handling
     const filterSelects = document.querySelectorAll('#category, #publisher, #language');
     filterSelects.forEach(select => {
         select.addEventListener('change', function() {
+            // Add loading state for mobile
+            this.disabled = true;
             this.form.submit();
         });
     });
@@ -1030,36 +1312,83 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.pagination-controls').forEach(control => {
             control.style.display = 'none';
         });
-        // Show all books
+        // Show all books with optimized animations
         bookCards.forEach((card, index) => {
-            card.style.animationDelay = `${index * 0.05}s`;
-            card.style.animation = 'fadeInUp 0.6s ease forwards';
+            card.style.animationDelay = `${index * 0.02}s`;
+            card.style.animation = 'fadeInUp 0.4s ease forwards';
         });
     }
     
-    // Keyboard navigation
+    // Touch gesture support for navigation
+    let touchStartX = 0;
+    let touchEndX = 0;
+    
+    function handleSwipe() {
+        const swipeThreshold = 50;
+        const swipeDistance = touchEndX - touchStartX;
+        
+        if (Math.abs(swipeDistance) > swipeThreshold && !showingAll && totalBooks > booksPerPage) {
+            if (swipeDistance > 0 && currentPage > 1) {
+                // Swipe right - previous page
+                navigatePage('prev');
+            } else if (swipeDistance < 0 && currentPage < totalPages) {
+                // Swipe left - next page
+                navigatePage('next');
+            }
+        }
+    }
+    
+    // Add touch event listeners to books grid
+    const booksGrid = document.querySelector('.books-grid');
+    if (booksGrid) {
+        booksGrid.addEventListener('touchstart', function(e) {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+        
+        booksGrid.addEventListener('touchend', function(e) {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        }, { passive: true });
+    }
+    
+    // Keyboard navigation (for mobile keyboards)
     document.addEventListener('keydown', function(e) {
         if (!showingAll && totalBooks > booksPerPage) {
             if (e.key === 'ArrowLeft' && currentPage > 1) {
-                currentPage--;
-                updatePagination();
-                document.querySelector('.books-grid').scrollIntoView({ behavior: 'smooth' });
+                e.preventDefault();
+                navigatePage('prev');
             } else if (e.key === 'ArrowRight' && currentPage < totalPages) {
-                currentPage++;
-                updatePagination();
-                document.querySelector('.books-grid').scrollIntoView({ behavior: 'smooth' });
+                e.preventDefault();
+                navigatePage('next');
             }
+        }
+    });
+    
+    // Mobile image loading optimization
+    const images = document.querySelectorAll('.book-cover-shelf');
+    images.forEach(img => {
+        // Ensure images load immediately on mobile
+        if (img.complete && img.naturalHeight !== 0) {
+            img.style.opacity = '1';
+        } else {
+            img.addEventListener('load', function() {
+                this.style.opacity = '1';
+            });
+            img.addEventListener('error', function() {
+                this.src = '{{ url_for("static", filename="bookshelf.png") }}';
+                this.style.opacity = '1';
+            });
         }
     });
 });
 
-// CSS Animation
+// Optimized CSS Animation for mobile
 const style = document.createElement('style');
 style.textContent = `
     @keyframes fadeInUp {
         from {
             opacity: 0;
-            transform: translateY(30px);
+            transform: translateY(20px);
         }
         to {
             opacity: 1;
@@ -1069,6 +1398,30 @@ style.textContent = `
     
     .book-card {
         opacity: 0;
+    }
+    
+    .book-cover-shelf {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    /* Mobile performance optimizations */
+    @media (max-width: 768px) {
+        * {
+            -webkit-transform: translateZ(0);
+            transform: translateZ(0);
+        }
+        
+        .book-card {
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+        }
+        
+        /* Ensure images load on mobile */
+        .book-cover-shelf {
+            max-width: 100%;
+            height: auto;
+        }
     }
 `;
 document.head.appendChild(style);

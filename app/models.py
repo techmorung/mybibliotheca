@@ -210,6 +210,13 @@ class Book(db.Model):
     def get_user_book_by_isbn(cls, user_id, isbn):
         return cls.query.filter_by(user_id=user_id, isbn=isbn).first()
     
+    @property
+    def secure_cover_url(self):
+        """Return HTTPS version of cover URL for security."""
+        if self.cover_url and self.cover_url.startswith('http://'):
+            return self.cover_url.replace('http://', 'https://')
+        return self.cover_url
+    
     def __repr__(self):
         return f'<Book {self.title} by {self.author}>'
 

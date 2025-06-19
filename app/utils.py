@@ -251,3 +251,20 @@ def generate_month_review_image(books, month, year):
         bg.paste(cover, (x, y), cover if cover.mode == 'RGBA' else None)
 
     return bg.convert('RGB')
+
+def ensure_https_url(url):
+    """Convert HTTP URLs to HTTPS for better security and compatibility."""
+    if url and url.startswith('http://'):
+        return url.replace('http://', 'https://')
+    return url
+
+def process_book_data(book_data):
+    """Process book data to ensure HTTPS URLs and clean data."""
+    if 'cover_url' in book_data and book_data['cover_url']:
+        book_data['cover_url'] = ensure_https_url(book_data['cover_url'])
+    
+    # Also fix thumbnail URLs if they exist
+    if 'thumbnail_url' in book_data and book_data['thumbnail_url']:
+        book_data['thumbnail_url'] = ensure_https_url(book_data['thumbnail_url'])
+    
+    return book_data
