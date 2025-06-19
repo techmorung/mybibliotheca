@@ -200,7 +200,17 @@ def view_book(uid):
 def log_reading(uid):
     book = Book.query.filter_by(uid=uid, user_id=current_user.id).first_or_404()
     log_date_str = request.form.get('log_date')
-    log_date = datetime.strptime(log_date_str, '%Y-%m-%d').date() if log_date_str else date.today()
+    
+    # Use configured timezone instead of naive date.today()
+    timezone = pytz.timezone(current_app.config.get('TIMEZONE', 'UTC'))
+    
+    if log_date_str:
+        log_date = datetime.strptime(log_date_str, '%Y-%m-%d').date()
+    else:
+        # Get today's date in the configured timezone
+        now_tz = datetime.now(timezone)
+        log_date = now_tz.date()
+    
     existing_log = ReadingLog.query.filter_by(book_id=book.id, date=log_date).first()
     if existing_log:
         flash('You have already logged reading for this day.')
@@ -225,11 +235,17 @@ def delete_book(uid):
 @login_required
 def toggle_finished(uid):
     book = Book.query.filter_by(uid=uid, user_id=current_user.id).first_or_404()
+    
+    # Use configured timezone for consistent date handling
+    timezone = pytz.timezone(current_app.config.get('TIMEZONE', 'UTC'))
+    
     if book.finish_date:
         book.finish_date = None
         flash('Book marked as currently reading.')
     else:
-        book.finish_date = date.today()
+        # Get today's date in the configured timezone
+        now_tz = datetime.now(timezone)
+        book.finish_date = now_tz.date()
         flash('Book marked as finished.')
     db.session.commit()
     return redirect(url_for('main.view_book', uid=book.uid))
@@ -240,7 +256,10 @@ def start_reading(uid):
     book = Book.query.filter_by(uid=uid, user_id=current_user.id).first_or_404()
     book.want_to_read = False
     if not book.start_date:
-        book.start_date = datetime.today().date()
+        # Use configured timezone
+        timezone = pytz.timezone(current_app.config.get('TIMEZONE', 'UTC'))
+        now_tz = datetime.now(timezone)
+        book.start_date = now_tz.date()
     db.session.commit()
     flash(f'Started reading "{book.title}".')
     return redirect(url_for('main.index'))
@@ -255,8 +274,12 @@ def update_status(uid):
     finished = 'finished' in request.form
     currently_reading = 'currently_reading' in request.form
 
+    # Use configured timezone
+    timezone = pytz.timezone(current_app.config.get('TIMEZONE', 'UTC'))
+    now_tz = datetime.now(timezone)
+
     if finished:
-        book.finish_date = datetime.now().date()
+        book.finish_date = now_tz.date()
         book.want_to_read = False
         book.library_only = False
     elif currently_reading:
@@ -264,7 +287,7 @@ def update_status(uid):
         book.want_to_read = False
         book.library_only = False
         if not book.start_date:
-            book.start_date = datetime.now().date()
+            book.start_date = now_tz.date()
     elif book.want_to_read:
         book.finish_date = None
         book.library_only = False

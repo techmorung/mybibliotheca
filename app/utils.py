@@ -125,7 +125,12 @@ def calculate_reading_streak(user_id, streak_offset=0):
     # Sort in descending order (most recent first)
     log_dates.sort(reverse=True)
     
-    today = date.today()
+    # Use configured timezone to get "today"
+    from flask import current_app
+    import pytz
+    timezone = pytz.timezone(current_app.config.get('TIMEZONE', 'UTC'))
+    today = datetime.now(timezone).date()
+    
     streak = 0
     
     # Check if there's a log for today or yesterday
