@@ -7,6 +7,7 @@
 
 
 [**Documentation**](https://mybibliotheca.org)
+
 [**Join us on Discord!**](https://discord.gg/Hc8C5eRm7Q)
 
 ---
