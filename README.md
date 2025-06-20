@@ -6,9 +6,12 @@
 🆕 **Multi-User Features**: Multi-user authentication, user data isolation, admin management, and secure password handling.
 
 
-[**Documentation**](https://mybibliotheca.org)
+[![Documentation](https://img.shields.io/badge/Documentation-MyBibliotheca-4a90e2?style=for-the-badge&logo=read-the-docs&logoColor=white)](https://mybibliotheca.org)
 
-[**Join us on Discord!**](https://discord.gg/Hc8C5eRm7Q)
+
+[![Discord](https://img.shields.io/badge/Discord-7289DA?logo=discord&logoColor=white&labelColor=7289DA&style=for-the-badge)](https://discord.gg/Hc8C5eRm7Q)
+
+
 
 ---
 
