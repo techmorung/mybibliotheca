@@ -1,0 +1,16 @@
+{
+  "name": "MyBibliotheca",
+  "description": "Track your reading habits, log books, and visualize your library—all in your own space.",
+  "short_name": "MyBibliotheca",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "/static/book_cover.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "display": "standalone",
+  "background_color": "#fff"
+}
