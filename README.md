@@ -58,7 +58,7 @@ docker run -d \
   -e TIMEZONE=America/Chicago \
   -e WORKERS=6 \
   --restart unless-stopped \
-  pickles4evaaaa/MyBibliotheca:latest
+  pickles4evaaaa/mybibliotheca:1.1.0
 ```
 
 ---
@@ -72,7 +72,7 @@ version: '3.8'
 
 services:
   MyBibliotheca:
-    image: pickles4evaaaa/mybibliotheca:latest
+    image: pickles4evaaaa/mybibliotheca:1.1.0
     container_name: mybibliotheca
     ports:
       - "5054:5054"
@@ -205,8 +205,6 @@ Existing single-user installations are **automatically migrated** to multi-user:
 
    This step creates the `data` directory and database file with proper permissions for your platform.
 
-   This step creates the `data` directory and database file with proper permissions for your platform.
-
 5. **Run the app**
 
    **On Linux/macOS:**
@@ -246,8 +244,8 @@ Existing single-user installations are **automatically migrated** to multi-user:
 
 1. **Clone and configure**:
 ```bash
-git clone https://github.com/your-username/MyBibliotheca.git
-cd MyBibliotheca
+git clone https://github.com/your-username/mybibliotheca.git
+cd mybibliotheca
 cp .env.example .env
 ```
 
