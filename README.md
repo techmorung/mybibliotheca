@@ -58,7 +58,7 @@ docker run -d \
   -e TIMEZONE=America/Chicago \
   -e WORKERS=6 \
   --restart unless-stopped \
-  pickles4evaaaa/mybibliotheca:1.1.0
+  pickles4evaaaa/mybibliotheca:1.1.1
 ```
 
 ---
@@ -72,7 +72,7 @@ version: '3.8'
 
 services:
   MyBibliotheca:
-    image: pickles4evaaaa/mybibliotheca:1.1.0
+    image: pickles4evaaaa/mybibliotheca:1.1.1
     container_name: mybibliotheca
     ports:
       - "5054:5054"
