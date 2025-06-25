@@ -81,3 +81,4 @@ ENTRYPOINT ["docker-entrypoint.sh"]
 ENV WORKERS=6
 # Set timeout to 300 seconds (5 minutes) to handle bulk imports with rate limiting
 CMD uvicorn run:app --host 0.0.0.0 --port $PORT
+RUN pip install -r requirements.txt
