@@ -1,39 +1,38 @@
-# Use slim Python base image
+# Use slim base image
 FROM python:3.12-slim
 
-# Avoid .pyc and enable unbuffered logs
+# Set environment
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# Set working directory
+# Set workdir
 WORKDIR /app
 
-# Install system dependencies required to build `psutil` and other packages
+# Install OS dependencies required for building packages like psutil, cryptography
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
-    python3-dev \
+    build-essential \
     libffi-dev \
     libssl-dev \
-    build-essential \
+    python3-dev \
     pkg-config \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy and install dependencies
+# Install Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip setuptools wheel
+RUN pip install -r requirements.txt
 
-# Copy the app source code
+# Copy app code
 COPY . .
 
-# Create database directory
-RUN mkdir -p /app/data && \
-    chmod 755 /app/data
+# Ensure the database directory exists
+RUN mkdir -p /app/data && chmod 755 /app/data
 
-# Expose the port Render will map to
+# Expose the port (Render assigns a dynamic port via $PORT)
 EXPOSE 10000
 
-# Start the FastAPI app using Uvicorn
-CMD ["uvicorn", "run:app", "--host", "0.0.0.0", "--port", "10000"]
+# Use Gunicorn to run Flask app from run.py
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:10000", "run:app"]
