@@ -1,7 +1,4 @@
-from fastapi import FastAPI
+from app import create_app
 
-app = FastAPI()
-
-@app.get("/")
-def read_root():
-    return {"message": "Welcome to MyBibliotheca!"}
+# Create and expose the Flask app for WSGI (Gunicorn will use this)
+app = create_app()
