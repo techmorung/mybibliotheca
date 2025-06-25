@@ -80,5 +80,15 @@ ENTRYPOINT ["docker-entrypoint.sh"]
 # Use WORKERS environment variable for Gunicorn workers Default to 6 workers if not specified
 ENV WORKERS=6
 # Set timeout to 300 seconds (5 minutes) to handle bulk imports with rate limiting
-CMD uvicorn run:app --host 0.0.0.0 --port $PORT
 RUN pip install -r requirements.txt
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+COPY . .
+
+EXPOSE 10000
+CMD uvicorn run:app --host 0.0.0.0 --port $PORT
